@@ -1,0 +1,458 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "0.0.0.1",
+    "parameters": {
+        "adminUsername": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+        },
+        "adminPassword": {
+            "type": "string",
+            "minLength": 8
+        },
+        "disablePasswordAuth": {
+            "type": "string",
+            "defaultValue": "False",
+            "allowedValues": [
+                "True",
+                "False"
+            ],
+            "metadata": {
+                "description": "If the value is set to 'true', then the user may log in with both the password specified AND the SSH Public Keys too.  If the value is set to 'false', then the user may login with the SSH Keys specified only."
+            }
+        },
+        "sshKeyValue": {
+            "type": "string",
+            "metadata": {
+                "description": "SSH Key Value #1 for use when logging in with the user defined in the adminUsername parameter"
+            }
+        },
+        "addressPrefix": {
+            "type": "string",
+            "defaultValue": "10.3.0.0/24"
+        },
+        "vmSize": {
+            "type":"string",
+            "defaultValue": "Standard_D11_V2"
+        },
+        "numberOfComputeNodes": {
+           "type": "int",
+           "defaultValue": 5
+        },
+        "ubuntuOSVersion": {
+            "type": "string",
+            "defaultValue": "14.04.2-LTS",
+            "allowedValues": [
+                "12.04.5-LTS",
+                "14.04.2-LTS",
+                "15.04"
+            ],
+            "metadata": {
+                "description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version. Allowed values: 12.04.5-LTS, 14.04.2-LTS, 15.04."
+            }
+        },
+        "gadgetronDockerImage": {
+            "type": "string",
+            "defaultValue": "gadgetron/ubuntu_1404_no_cuda"
+        }
+     },
+    "variables": {  
+            "imagePublisher": "Canonical",
+            "imageOffer": "UbuntuServer",
+            "OSDiskName": "GTOsDisk",
+            "storageAccountType": "Standard_LRS",
+            "publicIPAddressType": "Dynamic",
+            "publicIPAddressName": "[concat(resourceGroup().name,'PublicIP')]",
+            "storageAccountName": "[toLower(concat(replace(resourceGroup().name,'-',''),'sa'))]", 
+            "vmStorageAccountContainerName": "vhds",
+            "nicPrefix": "[concat(resourceGroup().name,'Nic')]",
+            "nicGateway": "[concat(variables('nicPrefix'),'Gateway')]",
+            "nicRelay": "[concat(variables('nicPrefix'),'Relay')]",
+            "dnsNameforLBIP": "[toLower(resourceGroup().name)]",
+            "vmnamegateway": "[concat(resourceGroup().name, 'gateway')]",
+            "vmnamerelay": "[concat(resourceGroup().name, 'relay')]",
+            "vmprefix": "[concat(resourceGroup().name,'node')]",
+            "vnetname": "[concat(resourceGroup().name,'VNet')]",
+            "vsubnetname": "[concat(resourceGroup().name,'VSubnet')]",
+            "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetname'))]",
+            "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('vsubnetname'))]"
+      
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageAccountName')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "accountType": "[variables('storageAccountType')]"
+            }
+        },
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddressName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
+                "dnsSettings": {
+                    "domainNameLabel": "[variables('dnsNameforLBIP')]"
+                }
+            }
+        }, 
+        {
+            "name":"[variables('vnetname')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "type":"Microsoft.Network/virtualNetworks",
+            "properties": {
+                "addressSpace": {
+                "addressPrefixes": [
+                    "[parameters('addressPrefix')]"
+                ]
+                },
+                "subnets": [
+                {
+                    "name": "[variables('vsubnetname')]",
+                    "properties": {
+                    "addressPrefix": "[parameters('addressPrefix')]"
+                    }
+                }
+                ]
+            }            
+        },
+ 
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nicGateway')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
+                "[concat('Microsoft.Network/virtualNetworks/', variables('vnetname'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                {
+                    "name": "ipconfig1",
+                    "properties": {
+                    "privateIPAllocationMethod": "Dynamic",
+                    "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+                    },
+                    "subnet": {
+                        "id": "[variables('subnetRef')]"
+                    }
+                    }
+                }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nicRelay')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', variables('vnetname'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                {
+                    "name": "ipconfig1relay",
+                    "properties": {
+                    "privateIPAllocationMethod": "Dynamic",
+                    "subnet": {
+                        "id": "[variables('subnetRef')]"
+                    }
+                    }
+                }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Network/networkInterfaces",
+            "copy": {
+                "name": "nicloop",
+                "count": "[parameters('numberOfComputeNodes')]"
+            },
+            "name": "[concat(variables('nicPrefix'),copyIndex())]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', variables('vnetname'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                {
+                    "name": "[concat('ipconfig1', copyIndex())]",
+                    "properties": {
+                    "privateIPAllocationMethod": "Dynamic",
+                    "subnet": {
+                        "id": "[variables('subnetRef')]"
+                    }
+                    }
+                }
+                ]
+            }
+        },
+        {
+             "apiVersion": "2015-05-01-preview",
+             "type": "Microsoft.Compute/virtualMachines",
+             "name": "[variables('vmnamegateway')]",
+             "location": "[resourceGroup().location]",
+             "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+                "[concat('Microsoft.Network/networkInterfaces/', variables('nicGateway'))]",
+                "[concat('Microsoft.Network/networkInterfaces/', variables('nicRelay'))]"
+            ],
+             "properties": {
+                 "hardwareProfile": 
+                 {
+                    "vmSize": "[parameters('vmSize')]"    
+                 },
+                 "osProfile": {
+                    "computerName": "[concat(resourceGroup().name, 'gateway')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": "[parameters('disablePasswordAuth')]",
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
+                                    "keyData": "[parameters('sshKeyValue')]"
+                                }
+                            ]
+                            }
+                    }
+                },
+                 "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('imagePublisher')]",
+                        "offer": "[variables('imageOffer')]",
+                        "sku": "[parameters('ubuntuOSVersion')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "osdisk",
+                        "vhd": {
+                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+                        },
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                 },
+                 "networkProfile": {
+                           "networkInterfaces": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicGateway'))]"
+                                }
+                            ]  
+                 }
+             }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vmnamegateway'),'/', 'DockerExtension')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmnamegateway'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "DockerExtension",
+                "typeHandlerVersion": "1.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                        "compose": {
+                            "gadgetron" : {
+                                "image" : "[parameters('gadgetronDockerImage')]",
+                                "ports" : ["9002:9002","9080:9080"],
+                                "environment": {
+                                    "GADGETRON_RELAY_HOST": "[reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress]"
+                                }
+
+                            }
+                                                
+                    }
+                }
+            }
+        },
+        {
+             "apiVersion": "2015-05-01-preview",
+             "type": "Microsoft.Compute/virtualMachines",
+             "name": "[variables('vmnamerelay')]",
+             "location": "[resourceGroup().location]",
+             "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+                "[concat('Microsoft.Network/networkInterfaces/', variables('nicRelay'))]"
+            ],
+             "properties": {
+                 "hardwareProfile": 
+                 {
+                    "vmSize": "[parameters('vmSize')]"    
+                 },
+                 "osProfile": {
+                    "computerName": "[concat(resourceGroup().name, 'relay')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": "[parameters('disablePasswordAuth')]",
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
+                                    "keyData": "[parameters('sshKeyValue')]"
+                                }
+                            ]
+                            }
+                    }
+                },
+                 "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('imagePublisher')]",
+                        "offer": "[variables('imageOffer')]",
+                        "sku": "[parameters('ubuntuOSVersion')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "osdisk",
+                        "vhd": {
+                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',concat(variables('OSDiskName'),'relay'),'.vhd')]"
+                        },
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                 },
+                 "networkProfile": {
+                           "networkInterfaces": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicRelay'))]"
+                                }
+                            ]  
+                 }
+             }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vmnamerelay'),'/', 'DockerExtension')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmnamegateway'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "DockerExtension",
+                "typeHandlerVersion": "1.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                        "compose": {
+                            "gadgetron_relay" : {
+                                "image" : "[parameters('gadgetronDockerImage')]",
+                                "ports" : ["8002:8002","18002:18002"],
+                                "environment": {
+                                    "GADGETRON_RELAY_HOST": "192.168.2.1"
+                                }
+                            }
+                                                
+                    }
+                }
+            }
+        },
+        {
+             "apiVersion": "2015-05-01-preview",
+             "type": "Microsoft.Compute/virtualMachines",
+             "copy": {
+                 "name": "nodeloop",
+                 "count": "[parameters('numberOfComputeNodes')]"
+             },
+             "name": "[concat(variables('vmprefix'),copyIndex())]",
+             "location": "[resourceGroup().location]",
+             "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+                "[concat('Microsoft.Network/networkInterfaces/', concat(variables('nicPrefix'),copyIndex()))]",
+                 "[concat('Microsoft.Network/networkInterfaces/', variables('nicRelay'))]"
+            ],
+             "properties": {
+                 "hardwareProfile": 
+                 {
+                    "vmSize": "[parameters('vmSize')]"    
+                 },
+                 "osProfile": {
+                    "computerName": "[concat(resourceGroup().name, 'node', copyIndex())]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": "[parameters('disablePasswordAuth')]",
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
+                                    "keyData": "[parameters('sshKeyValue')]"
+                                }
+                            ]
+                            }
+                    }
+                },
+                 "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('imagePublisher')]",
+                        "offer": "[variables('imageOffer')]",
+                        "sku": "[parameters('ubuntuOSVersion')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "osdisk",
+                        "vhd": {
+                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',concat(variables('OSDiskName'),copyIndex()),'.vhd')]"
+                        },
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                 },
+                 "networkProfile": {
+                           "networkInterfaces": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('nicPrefix'),copyIndex()))]"
+                                }
+                            ]  
+                 }
+             }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "copy": {
+                "name":"dockerextloop",
+                "count": "[parameters('numberOfComputeNodes')]"
+            },
+            "name": "[concat(variables('vmprefix'),copyIndex(),'/', 'DockerExtension')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', concat(variables('vmprefix'),copyIndex()))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "DockerExtension",
+                "typeHandlerVersion": "1.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                        "compose": {
+                        "gadgetron" : {
+                            "image" : "[parameters('gadgetronDockerImage')]",
+                            "ports" : ["9002:9002","9080:9080"],
+                              "environment": {
+                                "GADGETRON_RELAY_HOST": "[reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress]"
+                            }
+                         }                    
+                    }
+                }
+            }
+        }        
+     ],
+    "outputs": {  }
+}
