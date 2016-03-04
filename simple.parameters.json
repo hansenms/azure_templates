@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "0.0.0.1",
+     "parameters": {
+        "adminUsername": {
+            "value": "<USERNAME FOR NODES>"
+        },
+        "adminPassword": {
+            "value": "<PASSWORD FOR NODES>"
+        },
+        "sshKeyValue": {
+          "value": "<SSH PUBLIC KEY>"
+        },
+        "vmSize": {
+            "value": "Standard_D14_V2"
+        },
+        "dockeruser": {
+            "value": "<DOCKER USERNAME>"            
+        },
+        "dockerpassword": {
+            "value": "<DOCKER PASSWORD>"
+        },
+        "dockeremail": {
+            "value": "<DOCKER EMAIL>"
+        },
+        "gadgetronDockerImage": {
+            "value": "gadgetron/ubuntu_1404_no_cuda:latest"
+        },
+        "numberOfComputeNodes": {
+            "value": 5
+        }
+   }
+}

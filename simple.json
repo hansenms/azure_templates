@@ -8,7 +8,7 @@
             "maxLength": 60
         },
         "adminPassword": {
-            "type": "string",
+            "type": "securestring",
             "minLength": 8
         },
         "disablePasswordAuth": {
@@ -34,7 +34,7 @@
         },
         "vmSize": {
             "type":"string",
-            "defaultValue": "Standard_D11_V2"
+            "defaultValue": "Standard_D14_V2"
         },
         "numberOfComputeNodes": {
            "type": "int",
@@ -71,9 +71,16 @@
         "gadgetronDependenciesShare": {
             "type": "string",
             "defaultValue": "gtdependencies"
-        }
-
-
+        },
+        "dockeruser": {
+            "type": "string"
+        },
+        "dockerpassword": {
+            "type": "securestring"
+        },
+        "dockeremail": {
+            "type": "string"
+        } 
      },
     "variables": {  
             "imagePublisher": "Canonical",
@@ -319,6 +326,13 @@
                             }
                                                 
                     }
+                },
+                "protectedSettings": {
+                    "login": {
+                        "username": "[parameters('dockeruser')]",
+                        "password": "[parameters('dockerpassword')]",
+                        "email": "[parameters('dockeremail')]"
+                    }
                 }
             }
         },
@@ -422,7 +436,15 @@
                             }
                                                 
                     }
+                },
+                "protectedSettings": {
+                    "login": {
+                        "username": "[parameters('dockeruser')]",
+                        "password": "[parameters('dockerpassword')]",
+                        "email": "[parameters('dockeremail')]"
+                    }
                 }
+
             }
         },
         {
@@ -537,7 +559,15 @@
                             }
                          }                    
                     }
+                },
+                "protectedSettings": {
+                    "login": {
+                        "username": "[parameters('dockeruser')]",
+                        "password": "[parameters('dockerpassword')]",
+                        "email": "[parameters('dockeremail')]"
+                    }
                 }
+
             }
         }        
      ],
