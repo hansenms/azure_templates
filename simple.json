@@ -56,6 +56,10 @@
             "type": "string",
             "defaultValue": "gadgetron/ubuntu_1404_no_cuda"
         },
+        "gadgetronStorageGroup": {
+            "type": "string",
+            "defaultValue": "GadgetronStorage"
+        },        
         "gadgetronStorageAccount": {
             "type": "string",
             "defaultValue": "gtstore"
@@ -92,10 +96,7 @@
             "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetname'))]",
             "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('vsubnetname'))]",
             "logshare": "[concat('//',parameters('gadgetronStorageAccount'),'.file.core.windows.net/', parameters('gadgetronLogShare'))]",
-            "dependenciesshare": "[concat('//',parameters('gadgetronStorageAccount'),'.file.core.windows.net/', parameters('gadgetronDependenciesShare'))]",
-            "sharekey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1]",
-            "fstablinelog": "[concat(variables('logshare'), ' /mnt/gtlog cifs vers=3.0,username=', parameters('gadgetronStorageAccount'), ',password=', variables('sharekey'), ',dir_mode=0777,file_mode=0777')]",
-            "fstablinedependencies": "[concat(variables('dependenciesshare'), ' /mnt/gtdependencies cifs vers=3.0,username=', parameters('gadgetronStorageAccount'), ',password=', variables('sharekey'), ',dir_mode=0777,file_mode=0777')]"                      
+            "dependenciesshare": "[concat('//',parameters('gadgetronStorageAccount'),'.file.core.windows.net/', parameters('gadgetronDependenciesShare'))]"
     },
     "resources": [
         {
@@ -268,26 +269,28 @@
                                     "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicGateway'))]"
                                 }
                             ]  
-                 },
-                 "extensionProfile": {
-                    "extensions": [
-                        {                
-                            "name": "configstor",
-                            "properties": {
-                                "publisher": "Microsoft.OSTCExtensions",
-                                "type": "CustomScriptForLinux",
-                                "typeHandlerVersion": "1.4",
-                                "settings": {
-                                     "fileUris": [
-                                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_shares.sh"
-                                     ],
-                                    "commandToExecute": "[concat('mount_shares.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && sleep 10 && mkdir -p /mnt/gtlog/gw')]"
-                                }
-                            }                
-                        }
-                    ]
-                }
+                 }
              }
+        },
+       {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vmnamegateway'),'/', 'MountShares')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmnamegateway'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.OSTCExtensions",
+                "type": "CustomScriptForLinux",
+                "typeHandlerVersion": "1.4",
+                "settings": {
+                        "fileUris": [
+                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_shares.sh"
+                        ],
+                    "commandToExecute": "[concat('sh mount_shares.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId(parameters('gadgetronStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && mkdir -p /mnt/gtlog/gateway')]"
+                }
+            }
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
@@ -295,7 +298,8 @@
             "apiVersion": "2015-05-01-preview",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', variables('vmnamegateway'))]"
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmnamegateway'))]",
+                "[concat('Microsoft.Network/networkInterfaces/', variables('nicRelay'))]"
             ],
             "properties": {
                 "publisher": "Microsoft.Azure.Extensions",
@@ -307,7 +311,7 @@
                             "gadgetron" : {
                                 "image" : "[parameters('gadgetronDockerImage')]",
                                 "ports" : ["9002:9002","9080:9080"],
-                                "volumes": ["/mnt/gtlog/gw:/tmp","/mnt/gtdependencies:/tmp/gadgetron"],
+                                "volumes": ["/mnt/gtlog/gateway:/tmp","/mnt/gtdependencies:/tmp/gadgetron"],
                                 "environment": {
                                     "GADGETRON_RELAY_HOST": "[reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress]"
                                 }
@@ -370,26 +374,28 @@
                                     "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicRelay'))]"
                                 }
                             ]  
-                 },
-                "extensionProfile": {
-                    "extensions": [
-                        {                
-                            "name": "configstor",
-                            "properties": {
-                                "publisher": "Microsoft.OSTCExtensions",
-                                "type": "CustomScriptForLinux",
-                                "typeHandlerVersion": "1.4",
-                                "settings": {
-                                     "fileUris": [
-                                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_shares.sh"
-                                     ],
-                                    "commandToExecute": "[concat('mount_shares.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && sleep 10 && mkdir -p /mnt/gtlog/relay')]"
-                                }
-                            }                
-                        }
-                    ]
-                }
+                 }
              }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vmnamerelay'),'/', 'MountShares')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmnamerelay'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.OSTCExtensions",
+                "type": "CustomScriptForLinux",
+                "typeHandlerVersion": "1.4",
+                "settings": {
+                        "fileUris": [
+                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_shares.sh"
+                        ],
+                    "commandToExecute": "[concat('sh mount_shares.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId(parameters('gadgetronStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && mkdir -p /mnt/gtlog/relay')]"
+                }
+            }
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
@@ -397,7 +403,7 @@
             "apiVersion": "2015-05-01-preview",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', variables('vmnamegateway'))]"
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmnamerelay'))]"
             ],
             "properties": {
                 "publisher": "Microsoft.Azure.Extensions",
@@ -476,26 +482,32 @@
                                     "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('nicPrefix'),copyIndex()))]"
                                 }
                             ]  
-                 },
-                 "extensionProfile": {
-                    "extensions": [
-                        {                
-                            "name": "configstor",
-                            "properties": {
-                                "publisher": "Microsoft.OSTCExtensions",
-                                "type": "CustomScriptForLinux",
-                                "typeHandlerVersion": "1.4",
-                                "settings": {
-                                     "fileUris": [
-                                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_shares.sh"
-                                     ],
-                                    "commandToExecute": "[concat('mount_shares.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && sleep 10 && mkdir -p /mnt/gtlog/', copyIndex())]"
-                                }
-                            }                
-                        }
-                    ]
-                } 
+                 }
              }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "copy": {
+                "name":"mountsharesloop",
+                "count": "[parameters('numberOfComputeNodes')]"
+            },
+            "name": "[concat(variables('vmprefix'),copyIndex(),'/', 'MounShares')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', concat(variables('vmprefix'),copyIndex()))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.OSTCExtensions",
+                "type": "CustomScriptForLinux",
+                "typeHandlerVersion": "1.4",
+                "settings": {
+                        "fileUris": [
+                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_shares.sh"
+                        ],
+                    "commandToExecute": "[concat('sh mount_shares.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId(parameters('gadgetronStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && mkdir -p /mnt/gtlog/', copyIndex())]"
+                }
+            }
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
