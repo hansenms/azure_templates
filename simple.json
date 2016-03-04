@@ -38,7 +38,7 @@
         },
         "numberOfComputeNodes": {
            "type": "int",
-           "defaultValue": 5
+           "defaultValue": 2
         },
         "ubuntuOSVersion": {
             "type": "string",
@@ -55,7 +55,21 @@
         "gadgetronDockerImage": {
             "type": "string",
             "defaultValue": "gadgetron/ubuntu_1404_no_cuda"
+        },
+        "gadgetronStorageAccount": {
+            "type": "string",
+            "defaultValue": "gtstore"
+        },
+        "gadgetronLogShare": {
+            "type": "string",
+            "defaultValue": "gtlogs"
+        },
+        "gadgetronDependenciesShare": {
+            "type": "string",
+            "defaultValue": "gtdependencies"
         }
+
+
      },
     "variables": {  
             "imagePublisher": "Canonical",
@@ -76,8 +90,12 @@
             "vnetname": "[concat(resourceGroup().name,'VNet')]",
             "vsubnetname": "[concat(resourceGroup().name,'VSubnet')]",
             "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetname'))]",
-            "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('vsubnetname'))]"
-      
+            "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('vsubnetname'))]",
+            "logshare": "[concat('//',parameters('gadgetronStorageAccount'),'.file.core.windows.net/', parameters('gadgetronLogShare'))]",
+            "dependenciesshare": "[concat('//',parameters('gadgetronStorageAccount'),'.file.core.windows.net/', parameters('gadgetronDependenciesShare'))]",
+            "sharekey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1]",
+            "fstablinelog": "[concat(variables('logshare'), ' /mnt/gtlog cifs vers=3.0,username=', parameters('gadgetronStorageAccount'), ',password=', variables('sharekey'), ',dir_mode=0777,file_mode=0777')]",
+            "fstablinedependencies": "[concat(variables('dependenciesshare'), ' /mnt/gtdependencies cifs vers=3.0,username=', parameters('gadgetronStorageAccount'), ',password=', variables('sharekey'), ',dir_mode=0777,file_mode=0777')]"                      
     },
     "resources": [
         {
@@ -250,7 +268,25 @@
                                     "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicGateway'))]"
                                 }
                             ]  
-                 }
+                 },
+                 "extensionProfile": {
+                    "extensions": [
+                        {                
+                            "name": "configstor",
+                            "properties": {
+                                "publisher": "Microsoft.OSTCExtensions",
+                                "type": "CustomScriptForLinux",
+                                "typeHandlerVersion": "1.4",
+                                "settings": {
+                                     "fileUris": [
+                                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_shares.sh"
+                                     ],
+                                    "commandToExecute": "[concat('mount_shares.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && sleep 10 && mkdir -p /mnt/gtlog/gw')]"
+                                }
+                            }                
+                        }
+                    ]
+                }
              }
         },
         {
@@ -271,6 +307,7 @@
                             "gadgetron" : {
                                 "image" : "[parameters('gadgetronDockerImage')]",
                                 "ports" : ["9002:9002","9080:9080"],
+                                "volumes": ["/mnt/gtlog/gw:/tmp","/mnt/gtdependencies:/tmp/gadgetron"],
                                 "environment": {
                                     "GADGETRON_RELAY_HOST": "[reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress]"
                                 }
@@ -333,7 +370,25 @@
                                     "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicRelay'))]"
                                 }
                             ]  
-                 }
+                 },
+                "extensionProfile": {
+                    "extensions": [
+                        {                
+                            "name": "configstor",
+                            "properties": {
+                                "publisher": "Microsoft.OSTCExtensions",
+                                "type": "CustomScriptForLinux",
+                                "typeHandlerVersion": "1.4",
+                                "settings": {
+                                     "fileUris": [
+                                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_shares.sh"
+                                     ],
+                                    "commandToExecute": "[concat('mount_shares.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && sleep 10 && mkdir -p /mnt/gtlog/relay')]"
+                                }
+                            }                
+                        }
+                    ]
+                }
              }
         },
         {
@@ -354,6 +409,7 @@
                             "gadgetron_relay" : {
                                 "image" : "[parameters('gadgetronDockerImage')]",
                                 "ports" : ["8002:8002","18002:18002"],
+                                "volumes": ["/mnt/gtlog/relay:/tmp","/mnt/gtdependencies:/mnt/gadgetron"],
                                 "environment": {
                                     "GADGETRON_RELAY_HOST": "192.168.2.1"
                                 }
@@ -420,7 +476,25 @@
                                     "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('nicPrefix'),copyIndex()))]"
                                 }
                             ]  
-                 }
+                 },
+                 "extensionProfile": {
+                    "extensions": [
+                        {                
+                            "name": "configstor",
+                            "properties": {
+                                "publisher": "Microsoft.OSTCExtensions",
+                                "type": "CustomScriptForLinux",
+                                "typeHandlerVersion": "1.4",
+                                "settings": {
+                                     "fileUris": [
+                                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_shares.sh"
+                                     ],
+                                    "commandToExecute": "[concat('mount_shares.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId('Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && sleep 10 && mkdir -p /mnt/gtlog/', copyIndex())]"
+                                }
+                            }                
+                        }
+                    ]
+                } 
              }
         },
         {
@@ -445,6 +519,7 @@
                         "gadgetron" : {
                             "image" : "[parameters('gadgetronDockerImage')]",
                             "ports" : ["9002:9002","9080:9080"],
+                            "volumes": ["[concat('/mnt/gtlog/', copyIndex(), ':/tmp')]","/mnt/gtdependencies:/mnt/gadgetron"],
                               "environment": {
                                 "GADGETRON_RELAY_HOST": "[reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress]"
                             }
