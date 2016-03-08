@@ -102,12 +102,13 @@
         "vmprefix": "[concat(resourceGroup().name,'node')]",
         "vnetname": "[concat(resourceGroup().name,'VNet')]",
         "vsubnetname": "[concat(resourceGroup().name,'VSubnet')]",
+        "dnsNameforLBIP": "[toLower(resourceGroup().name)]",
         "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetname'))]",
         "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('vsubnetname'))]",
         "logshare": "[concat('//',parameters('gadgetronStorageAccount'),'.file.core.windows.net/', parameters('gadgetronLogShare'))]",
         "dependenciesshare": "[concat('//',parameters('gadgetronStorageAccount'),'.file.core.windows.net/', parameters('gadgetronDependenciesShare'))]",
-        "gtdockerexturi": "https://github.com/hansenms/azure_templates/blob/master/gadgetron_docker_extension.json",
-        "gtnodeuri": "https://github.com/hansenms/azure_templates/blob/master/gadgetron_node.json"
+        "gtdockerexturi": "https://raw.githubusercontent.com/hansenms/azure_templates/master/gadgetron_docker_extension.json",
+        "gtnodeuri": "https://raw.githubusercontent.com/hansenms/azure_templates/master/gadgetron_node.json"
     },
     "resources": [
         {
@@ -265,7 +266,7 @@
                     "contentVersion": "0.0.0.1"
                 },
                 "parameters": {
-                    "vm": {
+                    "vmName": {
                         "value": "[variables('vmnamerelay')]"
                     },
                     "dockeruser": {
