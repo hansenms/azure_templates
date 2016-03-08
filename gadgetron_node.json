@@ -106,9 +106,9 @@
         "subnetRef": "[concat(variables('vnetID'),'/subnets/',parameters('subNetName'))]",
         "imagePublisher": "Canonical",
         "imageOffer": "UbuntuServer",
-        "OSDiskName": "GTOsDisk",
+        "OSDiskName": "[concat(parameters('vmName'), 'GTOsDisk')]",
         "vmStorageAccountContainerName": "vhds",
-        "gtdockerexturi": "https://github.com/hansenms/azure_templates/blob/master/gadgetron_docker_extension.json"
+        "gtdockerexturi": "https://raw.githubusercontent.com/hansenms/azure_templates/master/gadgetron_docker_extension.json"
     },
     "resources": [
         {
