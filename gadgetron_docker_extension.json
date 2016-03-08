@@ -1,0 +1,71 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "0.0.0.1",
+    "parameters": {
+        "vm": {
+           "type": "string"  
+        },
+        "dockeruser": {
+            "type": "string"
+        },
+        "dockerpassword": {
+            "type": "securestring"
+        },
+        "dockeremail": {
+            "type": "string"
+        },
+        "dockerimage": {
+            "type": "string"
+        },
+        "relayip": {
+            "type": "string",
+            "defaultValue": "192.168.1.1"
+        },
+        "ports": {
+            "type": "array",
+            "defaultValue": ["9002:9002","9080:9080"]
+        },
+        "volumes": {
+            "type": "array",
+            "defaultValue": ["/mnt/gtlog/gateway:/tmp","/mnt/gtdependencies:/tmp/gadgetron"]
+        }         
+    },
+    "variables": {
+        "apiversion": "2015-05-01-preview"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('vm'),'/', 'DockerExtension')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "DockerExtension",
+                "typeHandlerVersion": "1.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                        "compose": {
+                            "gadgetron" : {
+                                "image" : "[parameters('dockerimage')]",
+                                "ports" : "[parameters('ports')]",
+                                "volumes": "[parameters('ports')]",
+                                "environment": {
+                                    "GADGETRON_RELAY_HOST": "[reference(parameters('relayip'))]"
+                                }
+
+                            }
+                                                
+                    }
+                },
+                "protectedSettings": {
+                    "login": {
+                        "username": "[parameters('dockeruser')]",
+                        "password": "[parameters('dockerpassword')]",
+                        "email": "[parameters('dockeremail')]"
+                    }
+                }
+            }
+        }
+    ]
+}

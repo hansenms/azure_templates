@@ -103,7 +103,8 @@
             "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetname'))]",
             "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('vsubnetname'))]",
             "logshare": "[concat('//',parameters('gadgetronStorageAccount'),'.file.core.windows.net/', parameters('gadgetronLogShare'))]",
-            "dependenciesshare": "[concat('//',parameters('gadgetronStorageAccount'),'.file.core.windows.net/', parameters('gadgetronDependenciesShare'))]"
+            "dependenciesshare": "[concat('//',parameters('gadgetronStorageAccount'),'.file.core.windows.net/', parameters('gadgetronDependenciesShare'))]",
+            "gtdockerexturi": "https://github.com/hansenms/azure_templates/blob/master/gadgetron_docker_extension.json"
     },
     "resources": [
         {
@@ -300,42 +301,48 @@
             }
         },
         {
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(variables('vmnamegateway'),'/', 'DockerExtension')]",
-            "apiVersion": "2015-05-01-preview",
-            "location": "[resourceGroup().location]",
+            "name": "relaygtdocker",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/', variables('vmnamegateway'))]",
-                "[concat('Microsoft.Network/networkInterfaces/', variables('nicRelay'))]"
+                "[concat('Microsoft.Network/networkInterfaces/', variables('nicRelay'))]",
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmnamegateway'),'/extensions/MountShares')]"
             ],
             "properties": {
-                "publisher": "Microsoft.Azure.Extensions",
-                "type": "DockerExtension",
-                "typeHandlerVersion": "1.0",
-                "autoUpgradeMinorVersion": true,
-                "settings": {
-                        "compose": {
-                            "gadgetron" : {
-                                "image" : "[parameters('gadgetronDockerImage')]",
-                                "ports" : ["9002:9002","9080:9080"],
-                                "volumes": ["/mnt/gtlog/gateway:/tmp","/mnt/gtdependencies:/tmp/gadgetron"],
-                                "environment": {
-                                    "GADGETRON_RELAY_HOST": "[reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress]"
-                                }
-
-                            }
-                                                
-                    }
+                "mode": "Incremental",
+                "templateLink": {
+                "uri": "[variables('gtdockerexturi')]",
+                "contentVersion": "1.0.0.0"
                 },
-                "protectedSettings": {
-                    "login": {
-                        "username": "[parameters('dockeruser')]",
-                        "password": "[parameters('dockerpassword')]",
-                        "email": "[parameters('dockeremail')]"
+                "parameters": {
+                    "vm": {
+                        "value": "[variables('vmnamegateway')]"
+                    },
+                    "dockeruser": {
+                        "value": "[parameters('dockeruser')]"
+                    },
+                    "dockerpassword": {
+                        "value": "[parameters('dockerpassword')]"
+                    },
+                    "dockeremail": {
+                        "value": "[parameters('dockeremail')]"
+                    },
+                    "dockerimage": {
+                        "value": "[parameters('gadgetronDockerImage')]"
+                    },
+                    "relayip": {
+                        "value": "[reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress]"
+                    },
+                    "ports" : {
+                        "value": ["9002:9002","9080:9080"]
+                    },
+                    "volumes": {
+                        "value": ["/mnt/gtlog/gateway:/tmp","/mnt/gtdependencies:/tmp/gadgetron"]
                     }
                 }
             }
-        },
+        },  
         {
              "apiVersion": "2015-05-01-preview",
              "type": "Microsoft.Compute/virtualMachines",
