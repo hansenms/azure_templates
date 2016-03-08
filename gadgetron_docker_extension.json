@@ -2,7 +2,7 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "0.0.0.1",
     "parameters": {
-        "vm": {
+        "vmName": {
            "type": "string"  
         },
         "dockeruser": {
@@ -30,13 +30,10 @@
             "defaultValue": ["/mnt/gtlog/gateway:/tmp","/mnt/gtdependencies:/tmp/gadgetron"]
         }         
     },
-    "variables": {
-        "apiversion": "2015-05-01-preview"
-    },
     "resources": [
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('vm'),'/', 'DockerExtension')]",
+            "name": "[concat(parameters('vmName'),'/', 'DockerExtension')]",
             "apiVersion": "2015-05-01-preview",
             "location": "[resourceGroup().location]",
             "properties": {
@@ -49,9 +46,9 @@
                             "gadgetron" : {
                                 "image" : "[parameters('dockerimage')]",
                                 "ports" : "[parameters('ports')]",
-                                "volumes": "[parameters('ports')]",
+                                "volumes": "[parameters('volumes')]",
                                 "environment": {
-                                    "GADGETRON_RELAY_HOST": "[reference(parameters('relayip'))]"
+                                    "GADGETRON_RELAY_HOST": "[parameters('relayip')]"
                                 }
 
                             }
@@ -67,5 +64,11 @@
                 }
             }
         }
-    ]
+    ],
+    "outputs": {
+        "vmNameName": {
+            "type": "string",
+            "value": "[parameters('vmName')]"
+        }
+    }
 }
