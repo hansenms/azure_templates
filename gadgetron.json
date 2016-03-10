@@ -84,6 +84,18 @@
         },
         "dockeremail": {
             "type": "string"
+        },
+        "azure_client_id": {
+            "type": "string",
+            "defaultValue": "NA"
+        },
+        "azure_tenant_id": {
+            "type": "string",
+            "defaultValue": "NA"
+        },
+        "azure_key": {
+            "type": "string",
+            "defaultValue": "NA"
         }
     },
     "variables": {
@@ -108,7 +120,15 @@
         "logshare": "[concat('//',parameters('gadgetronStorageAccount'),'.file.core.windows.net/', parameters('gadgetronLogShare'))]",
         "dependenciesshare": "[concat('//',parameters('gadgetronStorageAccount'),'.file.core.windows.net/', parameters('gadgetronDependenciesShare'))]",
         "gtdockerexturi": "https://raw.githubusercontent.com/hansenms/azure_templates/master/gadgetron_docker_extension.json",
-        "gtnodeuri": "https://raw.githubusercontent.com/hansenms/azure_templates/master/gadgetron_node.json"
+        "gtnodeuri": "https://raw.githubusercontent.com/hansenms/azure_templates/master/gadgetron_node.json",
+        "configuration_info": {
+            "azure_client_id": "[parameters('azure_client_id')]",
+            "azure_tenant_id": "[parameters('azure_tenant_id')]",
+            "azure_key": "[parameters('azure_key')]",
+            "logshare": "[variables('logshare')]",
+            "dependenciesshare": "[variables('dependenciesshare')]",
+            "storageaccount": "[parameters('gadgetronStorageAccount')]"
+        }
     },
     "resources": [
         {
@@ -205,7 +225,8 @@
                                 }
                             ]
                         }
-                    }
+                    },
+                    "customData": "[base64(variables('configuration_info'))]"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -246,29 +267,10 @@
                 "typeHandlerVersion": "1.4",
                 "settings": {
                     "fileUris": [
-                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_shares.sh"
-                    ],
-                    "commandToExecute": "[concat('sh mount_shares.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId(parameters('gadgetronStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && mkdir -p /mnt/gtlog/relay')]"
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(variables('vmnamerelay'),'/', 'AzureCLI')]",
-            "apiVersion": "2015-05-01-preview",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', variables('vmnamerelay'))]"
-            ],
-            "properties": {
-                "publisher": "Microsoft.OSTCExtensions",
-                "type": "CustomScriptForLinux",
-                "typeHandlerVersion": "1.4",
-                "settings": {
-                    "fileUris": [
+                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_shares.sh",
                         "https://raw.githubusercontent.com/hansenms/azure_templates/master/install_azure_cli.sh"
                     ],
-                    "commandToExecute": "[concat('sh install_azure_cli.sh')]"
+                    "commandToExecute": "[concat('sh install_azure_cli.sh && sh mount_shares.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId(parameters('gadgetronStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && mkdir -p /mnt/gtlog/relay')]"
                 }
             }
         },
