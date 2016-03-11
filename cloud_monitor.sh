@@ -6,6 +6,8 @@ cooldown_interval=600
 idle_time=1800
 node_increment=5
 verbose=0
+custom_data=$(sudo sh get_custom_data.sh)
+group=$(echo $custom_data|jq .group|tr -d '"')
 
 function usage
 {
@@ -49,6 +51,17 @@ function number_of_active_nodes
     echo "$n"
 }
 
+function total_nodes
+{
+    numnodes=$(azure vm list -g $group --json| jq 'length')
+    expr $numnodes - 1
+}
+
+function deallocated_nodes
+{
+    azure vm list -g $group --json| jq 'map(select(.powerState == "VM deallocated")) | length'
+}
+
 while [ "$1" != "" ]; do
     case $1 in
         -s | --scale-up-interval )   shift
@@ -79,6 +92,10 @@ done
 
 #Make sure we are logged into azure
 bash azure_login.sh
+available_nodes=$(total_nodes)
+da_nodes=$(deallocated_nodes)
+
+log "Available nodes: $available_nodes, Deallocated: $da_nodes"
 
 cooldown_counter=$cooldown_interval
 while true; do
@@ -91,6 +108,11 @@ while true; do
     fi
 
     log "Nodes: $nodes, Active: $active_nodes, Ideal: $ideal_nodes"
+    bash update_iptables_relay.sh
+
+    if [ "$ideal_nodes" -gt "$nodes" ]; then
+	log "More nodes are needed"
+    fi
 
     sleep $scaleup_interval
     cooldown_counter=`expr $cooldown_counter - $scaleup_interval`
