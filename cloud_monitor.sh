@@ -62,6 +62,20 @@ function deallocated_nodes
     azure vm list -g $group --json| jq 'map(select(.powerState == "VM deallocated")) | length'
 }
 
+function find_node_for_ip
+{
+    ip=$1
+    nic=$(sh -c "azure network nic list -g $group --json|jq 'map(select(.ipConfigurations[0].privateIPAddress == \"${ip}\")) | .[0].id ' | tr -d '\"'")
+    sh -c "azure vm list -g $group --json| jq 'map(select(.networkProfile.networkInterfaces[0].id == \"$nic\"))| .[0].name'|tr -d '\"'"
+}
+
+function deallocate_node
+{
+    log "Deallocating node $1"
+    azure vm deallocate -g $group $1
+    log "Node $1 deallocated"
+}
+
 while [ "$1" != "" ]; do
     case $1 in
         -s | --scale-up-interval )   shift
@@ -119,6 +133,13 @@ while true; do
 
     if [ "$cooldown_counter" -lt 0 ]; then
         log "Cool down check"
+	if [ "$ideal_nodes" -le "$nodes" ] && [ "$nodes" -gt 0 ]; then
+	    on=$(oldest_node)
+	    nip=$(echo $on | jq .address | tr -d '"')
+	    nname=$(find_node_for_ip $nip)
+	    log "Shutting down node $nname with IP $nip"
+	    deallocate_node $nname &
+	fi
         cooldown_counter=$cooldown_interval
     fi    
 done
