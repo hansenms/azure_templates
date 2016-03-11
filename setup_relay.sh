@@ -23,3 +23,4 @@ wget https://raw.githubusercontent.com/hansenms/azure_templates/master/update_ip
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/update_iptables_relay.sh
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/get_custom_data.sh
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/azure_login.sh
+wget https://raw.githubusercontent.com/hansenms/azure_templates/master/cloud_monitor.sh
