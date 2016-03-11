@@ -145,7 +145,7 @@ while true; do
     log "Nodes: $nodes, Active: $active_nodes, Ideal: $ideal_nodes"
     bash update_iptables_relay.sh
 
-    if [ "$ideal_nodes" -gt "$nodes" ] && [ "$nodes" -lt 0 ]; then
+    if [ "$ideal_nodes" -gt "$nodes" ] && [ "$nodes" -lt "$available_nodes" ]; then
 	log "More nodes will be recruited from deallocated pool"
 	nodes_to_start=`expr $ideal_nodes - $nodes`
 	start_up_to_X_nodes $nodes_to_start
