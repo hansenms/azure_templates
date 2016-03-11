@@ -156,7 +156,7 @@ while true; do
 
     if [ "$cooldown_counter" -lt 0 ]; then
         log "Cool down check"
-	if [ "$ideal_nodes" -le "$nodes" ] && [ "$nodes" -lt "$available_nodes" ]; then
+	if [ "$ideal_nodes" -le "$nodes" ] && [ "$nodes" -le "$available_nodes" ]; then
 	    on=$(oldest_node)
 	    lastr=$(echo $on | jq .last_recon | tr -d '"')
 	    if [ "${lastr%.*}" -gt "$idle_time" ]; then
