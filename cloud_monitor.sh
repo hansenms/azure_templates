@@ -76,6 +76,27 @@ function deallocate_node
     log "Node $1 deallocated"
 }
 
+function start_node
+{
+    log "Start node $1"
+    azure vm start -g $group $1
+    log "Node $1 start"
+}
+
+function start_up_to_X_nodes
+{
+    X=$1
+    nlist=$(timeout 60 sh -c "azure vm list -g gttestgrpa --json | jq 'map(select(.powerState == \"VM deallocated\")) | .[0:$X] | .[].name' | tr -d '\"'")
+    if [ "$nlist" != "Terminated" ] && [ -n "$nlist" ]; then
+	for n in "$nlist"
+	do
+	    start_node $n &
+	done
+    fi
+
+}
+
+
 while [ "$1" != "" ]; do
     case $1 in
         -s | --scale-up-interval )   shift
@@ -88,7 +109,7 @@ while [ "$1" != "" ]; do
                                      cooldown_interval=$1
                                      ;;
         -i | --idle-time )           shift
-                                     idle-time=$1
+                                     idle_time=$1
                                      ;;
         -n | --node-increment )      shift
                                      node_increment=$1
@@ -124,8 +145,10 @@ while true; do
     log "Nodes: $nodes, Active: $active_nodes, Ideal: $ideal_nodes"
     bash update_iptables_relay.sh
 
-    if [ "$ideal_nodes" -gt "$nodes" ]; then
-	log "More nodes are needed"
+    if [ "$ideal_nodes" -gt "$nodes" ] && [ "$nodes" -lt 0 ]; then
+	log "More nodes will be recruited from deallocated pool"
+	nodes_to_start=`expr $ideal_nodes - $nodes`
+	start_up_to_X_nodes $nodes_to_start
     fi
 
     sleep $scaleup_interval
@@ -133,12 +156,17 @@ while true; do
 
     if [ "$cooldown_counter" -lt 0 ]; then
         log "Cool down check"
-	if [ "$ideal_nodes" -le "$nodes" ] && [ "$nodes" -gt 0 ]; then
+	if [ "$ideal_nodes" -le "$nodes" ] && [ "$nodes" -lt "$available_nodes" ]; then
 	    on=$(oldest_node)
-	    nip=$(echo $on | jq .address | tr -d '"')
-	    nname=$(find_node_for_ip $nip)
-	    log "Shutting down node $nname with IP $nip"
-	    deallocate_node $nname &
+	    lastr=$(echo $on | jq .last_recon | tr -d '"')
+	    if [ "${lastr%.*}" -gt "$idle_time" ]; then
+		nip=$(echo $on | jq .address | tr -d '"')
+		nname=$(find_node_for_ip $nip)
+		log "Shutting down node $nname with IP $nip"
+		curl http://${nip}:9080/acceptor/close
+		bash update_ip_tables_relay.sh
+		deallocate_node $nname &
+	    fi
 	fi
         cooldown_counter=$cooldown_interval
     fi    
