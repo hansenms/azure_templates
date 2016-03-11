@@ -6,8 +6,8 @@ custom_data=$(sh get_custom_data.sh)
 
 logshare=$(echo $custom_data | jq .logshare| tr -d '"')
 dependenciesshare=$(echo $custom_data | jq .dependenciesshare | tr -d '"')
-storageaccount=$(echo $custom_data | jq .storageaccount | tr -d '"'))
-sudo mount_shares.sh $logshare $dependenciesshare $storageaccount $share_key
+storageaccount=$(echo $custom_data | jq .storageaccount | tr -d '"')
+mount_shares.sh $logshare $dependenciesshare $storageaccount $share_key
 
 sudo apt-get update
 sudo apt-get install -y nodejs-legacy jq libxml2-utils emacs wget curl
