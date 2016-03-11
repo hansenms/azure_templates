@@ -121,7 +121,7 @@
         "dependenciesshare": "[concat('//',parameters('gadgetronStorageAccount'),'.file.core.windows.net/', parameters('gadgetronDependenciesShare'))]",
         "gtdockerexturi": "https://raw.githubusercontent.com/hansenms/azure_templates/master/gadgetron_docker_extension.json",
         "gtnodeuri": "https://raw.githubusercontent.com/hansenms/azure_templates/master/gadgetron_node.json",
-        "configuration_info": "[concat('{ \"azure_client_id\": \"', parameters('azure_client_id'),'\", ', '\"azure_tenant_id\": \"', parameters('azure_tenant_id'), '\", ', '\"azure_key\": \"', parameters('azure_key'), '\", ', '\"logshare\": \"', variables('logshare'), '\",', '\"dependenciesshare\": \"', variables('dependenciesshare'), '\", ' , '\"storageaccount\": \"', parameters('gadgetronStorageAccount'), '\" }')]"
+        "configuration_info": "[concat('{ \"group\": \"', resourceGroup().name, '\", \"azure_client_id\": \"', parameters('azure_client_id'),'\", ', '\"azure_tenant_id\": \"', parameters('azure_tenant_id'), '\", ', '\"azure_key\": \"', parameters('azure_key'), '\", ', '\"logshare\": \"', variables('logshare'), '\",', '\"dependenciesshare\": \"', variables('dependenciesshare'), '\", ' , '\"storageaccount\": \"', parameters('gadgetronStorageAccount'), '\" }')]"
     },
     "resources": [
         {
@@ -261,7 +261,10 @@
                 "settings": {
                     "fileUris": [
                         "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_shares.sh",
-                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/install_azure_cli.sh"
+                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/setup_relay.sh",
+                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/azure_login.sh",
+                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/get_custom_data.sh"
+                        
                     ],
                     "commandToExecute": "[concat('sh install_azure_cli.sh && sh mount_shares.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId(parameters('gadgetronStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && mkdir -p /mnt/gtlog/relay')]"
                 }
