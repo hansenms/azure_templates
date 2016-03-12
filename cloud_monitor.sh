@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Cloud monitoring for Gadgetron Azure Cloud
+# Michael S. Hansen (michael.hansen@nih.gov
+
 scaleup_interval=5
 activity_time=60
 cooldown_interval=600
@@ -44,9 +47,12 @@ function number_of_nodes
 
 function number_of_active_nodes
 {
-    n=$(sh -c "curl -s http://localhost:18002/info/json| jq '.nodes | map(select(.last_recon < ${activity_time})) |length'")
-    if [ -z "$n" ]; then
-	n=0
+    n=0
+    if [ "$(number_of_nodes)" -gt 0 ]; then
+	n=$(sh -c "curl -s http://localhost:18002/info/json| jq '.nodes | map(select(.last_recon < ${activity_time})) |length'")
+	if [ -z "$n" ]; then
+	    n=0
+	fi
     fi
     echo "$n"
 }
@@ -80,7 +86,7 @@ function start_node
 {
     log "Start node $1"
     azure vm start -g $group $1
-    log "Node $1 start"
+    log "Node $1 started"
 }
 
 function start_up_to_X_nodes
@@ -96,6 +102,10 @@ function start_up_to_X_nodes
 
 }
 
+function get_packet_count
+{
+    iptables -x -Z -L INPUT -v|grep "Chain INPUT" | awk '{print $5}'
+}
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -127,14 +137,15 @@ done
 
 #Make sure we are logged into azure
 bash azure_login.sh
+
+#Figure out how many nodes that we have total (started and stopped)
 available_nodes=$(total_nodes)
-da_nodes=$(deallocated_nodes)
 
-log "Available nodes: $available_nodes, Deallocated: $da_nodes"
-
+#Reset some counters before looping
 cooldown_counter=$cooldown_interval
+packets=$(get_packet_count)
+counter=0
 while true; do
-
     active_nodes=$(number_of_active_nodes)
     nodes=$(number_of_nodes)
     ideal_nodes=$nodes
@@ -142,13 +153,25 @@ while true; do
 	ideal_nodes=`expr $active_nodes + $node_increment`
     fi
 
-    log "Nodes: $nodes, Active: $active_nodes, Ideal: $ideal_nodes"
+    #Log every 5th run through the loop
+    if [ "$(expr $counter % 5)" -eq 0 ]; then
+	log "Nodes: $nodes, Active: $active_nodes, Ideal: $ideal_nodes"
+    fi
+    counter=`expr $counter + 1`
+
     bash update_iptables_relay.sh
 
     if [ "$ideal_nodes" -gt "$nodes" ] && [ "$nodes" -lt "$available_nodes" ]; then
 	log "More nodes will be recruited from deallocated pool"
 	nodes_to_start=`expr $ideal_nodes - $nodes`
 	start_up_to_X_nodes $nodes_to_start
+    fi
+
+    #Let's see if there is traffic
+    packets=$(get_packet_count)
+    if [ "$nodes" -eq 0 ] && [ "$packets" -gt 1000 ]; then
+	log "Network activty detected, starting nodes"
+	start_up_to_X_nodes $node_increment
     fi
 
     sleep $scaleup_interval
