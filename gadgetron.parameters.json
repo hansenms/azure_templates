@@ -28,6 +28,15 @@
         },
         "numberOfComputeNodes": {
             "value": 5
+        },
+        "azure_client_id": {
+            "value": "<CLIENT ID>"
+        },
+        "azure_tenant_id": {
+            "value": "<TENANT ID>"
+        },
+        "azure_key": {
+            "value": "<KEY>"
         }
    }
 }
