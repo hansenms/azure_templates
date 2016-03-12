@@ -26,6 +26,7 @@ wget https://raw.githubusercontent.com/hansenms/azure_templates/master/azure_log
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/cloud_monitor.sh
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/cloud_monitor.conf
 
+chmod +x cloud_monitor.sh
 cp cloud_monitor.conf /etc/init/
 
 service cloud_monitor start
