@@ -68,17 +68,10 @@ function deallocated_nodes
     azure vm list -g $group --json| jq 'map(select(.powerState == "VM deallocated")) | length'
 }
 
-function find_node_for_ip
-{
-    ip=$1
-    nic=$(sh -c "azure network nic list -g $group --json|jq 'map(select(.ipConfigurations[0].privateIPAddress == \"${ip}\")) | .[0].id ' | tr -d '\"'")
-    sh -c "azure vm list -g $group --json| jq 'map(select(.networkProfile.networkInterfaces[0].id == \"$nic\"))| .[0].name'|tr -d '\"'"
-}
-
 function deallocate_node
 {
     log "Deallocating node $1"
-    azure vm deallocate -g $group $1
+    azure vm deallocate -g $group $1 
     log "Node $1 deallocated"
 }
 
@@ -92,7 +85,7 @@ function start_node
 function start_up_to_X_nodes
 {
     X=$1
-    nlist=$(timeout 60 sh -c "azure vm list -g gttestgrpa --json | jq 'map(select(.powerState == \"VM deallocated\")) | .[0:$X] | .[].name' | tr -d '\"'")
+    nlist=$(timeout 60 sh -c "azure vm list -g $group --json | jq 'map(select(.powerState == \"VM deallocated\")) | .[0:$X] | .[].name' | tr -d '\"'")
     if [ "$nlist" != "Terminated" ] && [ -n "$nlist" ]; then
 	for n in "$nlist"
 	do
@@ -184,11 +177,13 @@ while true; do
 	    lastr=$(echo $on | jq .last_recon | tr -d '"')
 	    if [ "${lastr%.*}" -gt "$idle_time" ]; then
 		nip=$(echo $on | jq .address | tr -d '"')
-		nname=$(find_node_for_ip $nip)
-		log "Shutting down node $nname with IP $nip"
-		curl http://${nip}:9080/acceptor/close
-		bash update_ip_tables_relay.sh
-		deallocate_node $nname &
+		nname=$(bash get_node_from_ip.sh $group $nip)
+		if [ -n "$nname" ]; then
+		    log "Shutting down node $nname with IP $nip"
+		    curl http://${nip}:9080/acceptor/close
+		    bash update_iptables_relay.sh
+		    deallocate_node $nname &
+		fi
 	    fi
 	fi
         cooldown_counter=$cooldown_interval

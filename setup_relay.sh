@@ -25,6 +25,7 @@ wget https://raw.githubusercontent.com/hansenms/azure_templates/master/get_custo
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/azure_login.sh
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/cloud_monitor.sh
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/cloud_monitor.conf
+wget https://raw.githubusercontent.com/hansenms/azure_templates/master/get_node_from_ip.sh
 
 chmod +x cloud_monitor.sh
 cp cloud_monitor.conf /etc/init/
