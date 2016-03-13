@@ -266,7 +266,7 @@
                         "https://raw.githubusercontent.com/hansenms/azure_templates/master/get_custom_data.sh"
                         
                     ],
-                    "commandToExecute": "[concat('sh setup_relay.sh', ' ', listKeys(resourceId(parameters('gadgetronStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && mkdir -p /mnt/gtlog/relay')]"
+                    "commandToExecute": "[concat('bash setup_relay.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId(parameters('gadgetronStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && mkdir -p /mnt/gtlog/', variables('vmnamerelay'))]"
                 }
             }
         },
