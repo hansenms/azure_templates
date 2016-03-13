@@ -7,14 +7,13 @@ custom_data=$(sh get_custom_data.sh)
 logshare=$(echo $custom_data | jq .logshare| tr -d '"')
 dependenciesshare=$(echo $custom_data | jq .dependenciesshare | tr -d '"')
 storageaccount=$(echo $custom_data | jq .storageaccount | tr -d '"')
+echo "sh mount_shares.sh $logshare $dependenciesshare $storageaccount $share_key" >> /tmp/mnt_command.txt
 sh mount_shares.sh $logshare $dependenciesshare $storageaccount $share_key
 
-sudo apt-get update
-sudo apt-get install -y nodejs-legacy jq libxml2-utils emacs wget curl
-sudo apt-get install -y npm
-sudo npm install -g azure-cli
-
-sh azure_login.sh 
+apt-get update
+apt-get install -y nodejs-legacy jq libxml2-utils emacs wget curl
+apt-get install -y npm
+npm install -g azure-cli
 
 mkdir -p /usr/local/share/gadgetron/azure
 cd /usr/local/share/gadgetron/azure
