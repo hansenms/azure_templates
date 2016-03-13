@@ -309,7 +309,7 @@
                     },
                     "volumes": {
                         "value": [
-                            "/mnt/gtlog/relay:/tmp",
+                            "[concat('/mnt/gtlog/', variables('vmnamerelay'), ':/tmp')]",
                             "/mnt/gtdependencies:/tmp/gadgetron"
                         ]
                     }
