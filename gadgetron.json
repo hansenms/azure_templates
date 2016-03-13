@@ -248,7 +248,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(variables('vmnamerelay'),'/', 'MountShares')]",
+            "name": "[concat(variables('vmnamerelay'),'/', 'SetupRelay')]",
             "apiVersion": "2015-05-01-preview",
             "location": "[resourceGroup().location]",
             "dependsOn": [
@@ -275,7 +275,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2015-01-01",
             "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', variables('vmnamerelay'),'/extensions/MountShares')]"
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmnamerelay'),'/extensions/SetupRelay')]"
             ],
             "properties": {
                 "mode": "Incremental",
