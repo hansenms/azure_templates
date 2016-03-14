@@ -8,7 +8,7 @@
             "maxLength": 60
         },
         "adminPassword": {
-            "type": "securestring",
+            "type": "string",
             "minLength": 8
         },
         "disablePasswordAuth": {
@@ -349,7 +349,8 @@
                         "value": "[parameters('adminPassword')]"
                     },
                     "sshKeyValue": {
-                        "value": "[parameters('sshKeyValue')]"                    },
+                        "value": "[parameters('sshKeyValue')]"                    
+                    },
                     "vNetName": {
                         "value": "[variables('vnetname')]"
                     },

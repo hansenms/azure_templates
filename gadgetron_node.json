@@ -14,7 +14,7 @@
             "maxLength": 60
         },
         "adminPassword": {
-            "type": "securestring",
+            "type": "string",
             "minLength": 8
         },
         "disablePasswordAuth": {
