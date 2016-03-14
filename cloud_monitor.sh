@@ -59,13 +59,13 @@ function number_of_active_nodes
 
 function total_nodes
 {
-    numnodes=$(azure vm list -g $group --json| jq 'length')
+    numnodes=$(sh get_total_nodes.sh $group)
     expr $numnodes - 1
 }
 
 function deallocated_nodes
 {
-    azure vm list -g $group --json| jq 'map(select(.powerState == "VM deallocated")) | length'
+    sh get_deallocated_nodes.sh $group
 }
 
 function deallocate_node
@@ -85,9 +85,10 @@ function start_node
 function start_up_to_X_nodes
 {
     X=$1
-    nlist=$(timeout 60 sh -c "azure vm list -g $group --json | jq 'map(select(.powerState == \"VM deallocated\")) | .[0:$X] | .[].name' | tr -d '\"'")
+    nlist=$(timeout 60 sh -c "azure vm list -g $group --json | jq 'map(select(.powerState == \"VM deallocated\")) | .[0:$X] | .[].name' | tr -d '\"' | tr '\\n' ' '")
+    IFS=' ' read -a narray <<< "${nlist}"
     if [ "$nlist" != "Terminated" ] && [ -n "$nlist" ]; then
-	for n in "$nlist"
+	for n in "${narray[@]}"
 	do
 	    start_node $n &
 	done

@@ -25,6 +25,8 @@ wget https://raw.githubusercontent.com/hansenms/azure_templates/master/azure_log
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/cloud_monitor.sh
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/cloud_monitor.conf
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/get_node_from_ip.sh
+wget https://raw.githubusercontent.com/hansenms/azure_templates/master/get_total_nodes.sh
+wget https://raw.githubusercontent.com/hansenms/azure_templates/master/get_deallocated_nodes.sh
 
 chmod +x cloud_monitor.sh
 cp cloud_monitor.conf /etc/init/
