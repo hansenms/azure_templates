@@ -190,18 +190,19 @@
                     }
                 ]
             }
-        },
+        },    
         {
-            "apiVersion": "2015-05-01-preview",
+            "apiVersion": "2015-06-15",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[variables('vmnamerelay')]",
             "location": "[resourceGroup().location]",
-            "dependsOn": [
+             "dependsOn": [
                 "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
                 "[concat('Microsoft.Network/networkInterfaces/', variables('nicRelay'))]"
             ],
-            "properties": {
-                "hardwareProfile": {
+              "properties": {
+                  
+               "hardwareProfile": {
                     "vmSize": "[parameters('relayVmSize')]"
                 },
                 "osProfile": {
@@ -222,19 +223,17 @@
                     "customData": "[base64(variables('configuration_info'))]"
                 },
                 "storageProfile": {
-                    "imageReference": {
-                        "publisher": "[variables('imagePublisher')]",
-                        "offer": "[variables('imageOffer')]",
-                        "sku": "[parameters('ubuntuOSVersion')]",
-                        "version": "latest"
-                    },
                     "osDisk": {
-                        "name": "osdisk",
+                        "osType": "Linux",
+                        "name": "gt-f8095f2b-112a07a3-osDisk.7df2a746-54bd-4a5c-8a48-769d408295e2.vhd",
+                        "createOption": "FromImage",
+                        "image": {
+                            "uri": "https://gtimage5317.blob.core.windows.net/system/Microsoft.Compute/Images/vhds/gt-f8095f2b-112a07a3-osDisk.7df2a746-54bd-4a5c-8a48-769d408295e2.vhd"
+                        },
                         "vhd": {
                             "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
                         },
-                        "caching": "ReadWrite",
-                        "createOption": "FromImage"
+                        "caching": "ReadWrite"
                     }
                 },
                 "networkProfile": {
@@ -245,7 +244,7 @@
                     ]
                 }
             }
-        },
+        },        
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(variables('vmnamerelay'),'/', 'SetupRelay')]",
@@ -260,59 +259,13 @@
                 "typeHandlerVersion": "1.4",
                 "settings": {
                     "fileUris": [
-                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_shares.sh",
+                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_and_run_docker.sh",
                         "https://raw.githubusercontent.com/hansenms/azure_templates/master/setup_relay.sh",
                         "https://raw.githubusercontent.com/hansenms/azure_templates/master/azure_login.sh",
                         "https://raw.githubusercontent.com/hansenms/azure_templates/master/get_custom_data.sh"
                         
                     ],
                     "commandToExecute": "[concat('bash setup_relay.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId(parameters('gadgetronStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && mkdir -p /mnt/gtlog/', variables('vmnamerelay'))]"
-                }
-            }
-        },
-        {
-            "name": "relaygtdocker",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2015-01-01",
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', variables('vmnamerelay'),'/extensions/SetupRelay')]"
-            ],
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[variables('gtdockerexturi')]",
-                    "contentVersion": "0.0.0.1"
-                },
-                "parameters": {
-                    "vmName": {
-                        "value": "[variables('vmnamerelay')]"
-                    },
-                    "dockeruser": {
-                        "value": "[parameters('dockeruser')]"
-                    },
-                    "dockerpassword": {
-                        "value": "[parameters('dockerpassword')]"
-                    },
-                    "dockeremail": {
-                        "value": "[parameters('dockeremail')]"
-                    },
-                    "dockerimage": {
-                        "value": "[parameters('gadgetronDockerImage')]"
-                    },
-                    "ports": {
-                        "value": [
-                            "9002:9002",
-                            "9080:9080",
-                            "18002:18002",
-                            "8002:8002"
-                        ]
-                    },
-                    "volumes": {
-                        "value": [
-                            "[concat('/mnt/gtlog/', variables('vmnamerelay'), ':/tmp')]",
-                            "/mnt/gtdependencies:/tmp/gadgetron"
-                        ]
-                    }
                 }
             }
         },
@@ -365,30 +318,6 @@
                     },
                     "dependenciesShare": {
                         "value": "[variables('dependenciesshare')]"
-                    },
-                    "dockeruser": {
-                        "value": "[parameters('dockeruser')]"
-                    },
-                    "dockerpassword": {
-                        "value": "[parameters('dockerpassword')]"
-                    },
-                    "dockeremail": {
-                        "value": "[parameters('dockeremail')]"
-                    },
-                    "dockerports": {
-                        "value": [
-                            "9002:9002",
-                            "9080:9080"
-                        ]
-                    },
-                    "dockervolumes": {
-                        "value": [
-                            "[concat('/mnt/gtlog/', concat(variables('vmprefix'),copyIndex()), ':/tmp')]",
-                            "/mnt/gtdependencies:/tmp/gadgetron"
-                        ]
-                    },
-                    "dockerimage": {
-                        "value": "[parameters('gadgetronDockerImage')]"
                     },
                     "relayip": {
                         "value": "[reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress]"

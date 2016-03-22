@@ -34,18 +34,6 @@
                 "description": "SSH Key Value #1 for use when logging in with the user defined in the adminUsername parameter"
             }
         },
-        "ubuntuOSVersion": {
-            "type": "string",
-            "defaultValue": "14.04.2-LTS",
-            "allowedValues": [
-                "12.04.5-LTS",
-                "14.04.2-LTS",
-                "15.04"
-            ],
-            "metadata": {
-                "description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version. Allowed values: 12.04.5-LTS, 14.04.2-LTS, 15.04."
-            }
-        },
         "vNetName": {
             "type": "string"
         },
@@ -69,35 +57,9 @@
         "dependenciesShare": {
             "type": "string"
         },
-        "dockeruser": {
-            "type": "string"
-        },
-        "dockerpassword": {
-            "type": "securestring"
-        },
-        "dockeremail": {
-            "type": "string"
-        },
-        "dockerimage": {
-            "type": "string"
-        },
         "relayip": {
             "type": "string",
             "defaultValue": "192.168.1.1"
-        },
-        "dockerports": {
-            "type": "array",
-            "defaultValue": [
-                "9002:9002",
-                "9080:9080"
-            ]
-        },
-        "dockervolumes": {
-            "type": "array",
-            "defaultValue": [
-                "/mnt/gtlog/gateway:/tmp",
-                "/mnt/gtdependencies:/tmp/gadgetron"
-            ]
         }
     },
     "variables": {
@@ -129,9 +91,9 @@
                     }
                 ]
             }
-        },
+        },       
         {
-            "apiVersion": "2015-05-01-preview",
+            "apiVersion": "2015-06-15",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('vmName')]",
             "location": "[resourceGroup().location]",
@@ -141,6 +103,20 @@
             "properties": {
                 "hardwareProfile": {
                     "vmSize": "[parameters('vmSize')]"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "gt-f8095f2b-112a07a3-osDisk.7df2a746-54bd-4a5c-8a48-769d408295e2.vhd",
+                        "createOption": "FromImage",
+                        "image": {
+                            "uri": "https://gtimage5317.blob.core.windows.net/system/Microsoft.Compute/Images/vhds/gt-f8095f2b-112a07a3-osDisk.7df2a746-54bd-4a5c-8a48-769d408295e2.vhd"
+                        },
+                        "vhd": {
+                            "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+                        },
+                        "caching": "ReadWrite"
+                    }
                 },
                 "osProfile": {
                     "computerName": "[parameters('vmName')]",
@@ -158,22 +134,6 @@
                         }
                     }
                 },
-                "storageProfile": {
-                    "imageReference": {
-                        "publisher": "[variables('imagePublisher')]",
-                        "offer": "[variables('imageOffer')]",
-                        "sku": "[parameters('ubuntuOSVersion')]",
-                        "version": "latest"
-                    },
-                    "osDisk": {
-                        "name": "osdisk",
-                        "vhd": {
-                            "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
-                        },
-                        "caching": "ReadWrite",
-                        "createOption": "FromImage"
-                    }
-                },
                 "networkProfile": {
                     "networkInterfaces": [
                         {
@@ -182,10 +142,10 @@
                     ]
                 }
             }
-        },
+        },        
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('vmName'),'/', 'MountShares')]",
+            "name": "[concat(parameters('vmName'),'/', 'MountRun')]",
             "apiVersion": "2015-05-01-preview",
             "location": "[resourceGroup().location]",
             "dependsOn": [
@@ -197,51 +157,9 @@
                 "typeHandlerVersion": "1.4",
                 "settings": {
                     "fileUris": [
-                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_shares.sh"
+                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_and_run_docker.sh"
                     ],
-                    "commandToExecute": "[concat('sh mount_shares.sh ', parameters('logShare'), ' ', parameters('dependenciesShare'), ' ', parameters('sharedStorageAccountName'), ' ', listKeys(resourceId(parameters('sharedStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('sharedStorageAccountName')) ,'2015-05-01-preview').key1, ' && mkdir -p /mnt/gtlog/', parameters('vmName'))]"
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Resources/deployments",
-            "name": "[concat(parameters('vmName'), 'docker')]",
-            "apiVersion": "2015-01-01",
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]",
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'),'/extensions/MountShares')]"
-            ],
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[variables('gtdockerexturi')]",
-                    "contentVersion": "0.0.0.1"
-                },
-                "parameters": {
-                    "vmName": {
-                        "value": "[parameters('vmName')]"
-                    },
-                    "dockeruser": {
-                        "value": "[parameters('dockeruser')]"
-                    },
-                    "dockerpassword": {
-                        "value": "[parameters('dockerpassword')]"
-                    },
-                    "dockeremail": {
-                        "value": "[parameters('dockeremail')]"
-                    },
-                    "dockerimage": {
-                        "value": "[parameters('dockerimage')]"
-                    },
-                    "relayip": {
-                        "value": "[parameters('relayip')]"
-                    },
-                    "ports": {
-                        "value": "[parameters('dockerports')]"
-                    },
-                    "volumes": {
-                        "value": "[parameters('dockervolumes')]"
-                    }
+                    "commandToExecute": "[concat('sh mount_and_run_docker.sh ', parameters('logShare'), ' ', parameters('dependenciesShare'), ' ', parameters('sharedStorageAccountName'), ' ', listKeys(resourceId(parameters('sharedStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('sharedStorageAccountName')) ,'2015-05-01-preview').key1, ' ', parameters('relayip'))]"
                 }
             }
         }
