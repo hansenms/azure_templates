@@ -14,18 +14,6 @@
         "vmSize": {
             "value": "Standard_D14_V2"
         },
-        "dockeruser": {
-            "value": "<DOCKER USERNAME>"            
-        },
-        "dockerpassword": {
-            "value": "<DOCKER PASSWORD>"
-        },
-        "dockeremail": {
-            "value": "<DOCKER EMAIL>"
-        },
-        "gadgetronDockerImage": {
-            "value": "gadgetron/ubuntu_1404_no_cuda:latest"
-        },
         "numberOfComputeNodes": {
             "value": 5
         },
