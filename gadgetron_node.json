@@ -107,13 +107,13 @@
                 "storageProfile": {
                     "osDisk": {
                         "osType": "Linux",
-                        "name": "gt-f8095f2b-112a07a3-osDisk.7df2a746-54bd-4a5c-8a48-769d408295e2.vhd",
+                        "name": "[concat('osdisk',parameters('vmName'))]",
                         "createOption": "FromImage",
                         "image": {
-                            "uri": "https://gtimage5317.blob.core.windows.net/system/Microsoft.Compute/Images/vhds/gt-f8095f2b-112a07a3-osDisk.7df2a746-54bd-4a5c-8a48-769d408295e2.vhd"
+                            "uri": "[concat('https://',parameters('storageAccountName'),'.blob.core.windows.net/images/gtimage.vhd')]"
                         },
                         "vhd": {
-                            "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+                            "uri": "[concat('https://',parameters('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
                         },
                         "caching": "ReadWrite"
                     }

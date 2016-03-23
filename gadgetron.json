@@ -100,15 +100,6 @@
     },
     "resources": [
         {
-            "type": "Microsoft.Storage/storageAccounts",
-            "name": "[variables('storageAccountName')]",
-            "apiVersion": "2015-05-01-preview",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "accountType": "[variables('storageAccountType')]"
-            }
-        },
-        {
             "apiVersion": "2015-05-01-preview",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('publicIPAddressName')]",
@@ -172,8 +163,7 @@
             "name": "[variables('vmnamerelay')]",
             "location": "[resourceGroup().location]",
              "dependsOn": [
-                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-                "[concat('Microsoft.Network/networkInterfaces/', variables('nicRelay'))]"
+                 "[concat('Microsoft.Network/networkInterfaces/', variables('nicRelay'))]"
             ],
               "properties": {
                   
@@ -200,13 +190,13 @@
                 "storageProfile": {
                     "osDisk": {
                         "osType": "Linux",
-                        "name": "gt-f8095f2b-112a07a3-osDisk.7df2a746-54bd-4a5c-8a48-769d408295e2.vhd",
+                        "name": "osdiskrelay",
                         "createOption": "FromImage",
                         "image": {
-                            "uri": "https://gtimage5317.blob.core.windows.net/system/Microsoft.Compute/Images/vhds/gt-f8095f2b-112a07a3-osDisk.7df2a746-54bd-4a5c-8a48-769d408295e2.vhd"
+                            "uri": "[concat('https://',variables('storageAccountName'),'.blob.core.windows.net/images/gtimage.vhd')]"
                         },
                         "vhd": {
-                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+                            "uri": "[concat('https://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
                         },
                         "caching": "ReadWrite"
                     }
@@ -254,7 +244,6 @@
             "apiVersion": "2015-01-01",
             "dependsOn": [
                 "[concat('Microsoft.Network/virtualNetworks/', variables('vnetname'))]",
-                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
                 "[concat('Microsoft.Network/networkInterfaces/', variables('nicRelay'))]"
             ],
             "properties": {
