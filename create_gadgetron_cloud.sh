@@ -15,3 +15,8 @@ key=$(azure storage account keys list -g  ${group_name} ${storage_account} --jso
 
 azure storage container create --account-name ${storage_account} --account-key ${key} images
 azure storage blob copy start --dest-account-name ${storage_account} --dest-account-key ${key} --source-uri ${image_uri} --dest-container images --dest-blob gtimage.vhd
+
+while [ $(azure storage blob copy show -a ${storage_account} -k ${key} images gtimage.vhd --json| jq .copyStatus| tr -d '"') == "pending" ]; do 
+    echo "Copying" && sleep 5
+done
+echo "Copying done"
