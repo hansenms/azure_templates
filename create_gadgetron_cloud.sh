@@ -20,3 +20,6 @@ while [ $(azure storage blob copy show -a ${storage_account} -k ${key} images gt
     echo "Copying" && sleep 5
 done
 echo "Copying done"
+
+#Actually deploy the cloud
+time azure group deployment create -g ${group_name} --parameters-file ${template_parameters} --template-file ${template_file}
