@@ -19,4 +19,4 @@ mkdir -p /mnt/gtlog/$(hostname)
 service docker restart
 
 #Now run container
-docker run -e "GADGETRON_RELAY_IP=${relay_ip}" -v /mnt/gtlog/$(hostname):/tmp -v /mnt/gtdependencies:/tmp/gadgetron --name=gadgetron_container --publish=9002:9002 --publish=8002:8002 --publish=18002:18002 --publish=9080:9080 --restart=unless-stopped --detach -t current_gadgetron
+docker run -e "GADGETRON_RELAY_HOST=${relay_ip}" -v /mnt/gtlog/$(hostname):/tmp -v /mnt/gtdependencies:/tmp/gadgetron --name=gadgetron_container --publish=9002:9002 --publish=8002:8002 --publish=18002:18002 --publish=9080:9080 --restart=unless-stopped --detach -t current_gadgetron
