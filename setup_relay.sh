@@ -8,11 +8,6 @@ share_key=$4
 echo "sh mount_and_run_docker.sh $logshare $dependenciesshare $storageaccount $share_key 192.168.1.1"
 sh mount_and_run_docker.sh $logshare $dependenciesshare $storageaccount $share_key 192.168.1.1
 
-apt-get update
-apt-get install -y nodejs-legacy jq libxml2-utils emacs wget curl
-apt-get install -y npm
-npm install -g azure-cli
-
 sh azure_login.sh
 
 mkdir -p /usr/local/share/gadgetron/azure

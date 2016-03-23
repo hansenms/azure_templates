@@ -6,7 +6,6 @@ shareaccount=$3
 sharekey=$4
 relay_ip=$5
 
-apt-get -qq install cifs-utils -y
 mkdir -p /mnt/gtlog
 mkdir -p /mnt/gtdependencies 
 echo "${logshare} /mnt/gtlog cifs vers=3.0,username=${shareaccount},password=${sharekey},dir_mode=0777,file_mode=0777" >> /etc/fstab
