@@ -253,9 +253,7 @@
                 "virtualMachineProfile": {
                     "storageProfile": {
                         "osDisk": {
-                            "vhdContainers": [
-                                "[concat('https://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'))]"
-                            ],
+                            "osType": "Linux",
                             "name": "[concat('osdisk',toLower(variables('vmprefix')))]",
                             "caching": "ReadOnly",
                             "image": {
