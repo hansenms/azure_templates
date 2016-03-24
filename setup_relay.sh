@@ -22,6 +22,12 @@ wget https://raw.githubusercontent.com/hansenms/azure_templates/master/cloud_mon
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/get_node_from_ip.sh
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/get_total_nodes.sh
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/get_deallocated_nodes.sh
+wget https://raw.githubusercontent.com/hansenms/azure_templates/master/get_instance_id_from_ip.sh
+wget https://raw.githubusercontent.com/hansenms/azure_templates/master/get_vmss_capacity.sh
+wget https://raw.githubusercontent.com/hansenms/azure_templates/master/increment_vmss_capacity.sh
+wget https://raw.githubusercontent.com/hansenms/azure_templates/master/set_vmss_capacity.sh
+wget https://raw.githubusercontent.com/hansenms/azure_templates/master/vmss_update.json
+
 
 chmod +x cloud_monitor.sh
 cp cloud_monitor.conf /etc/init/
