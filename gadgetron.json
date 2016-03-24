@@ -156,18 +156,17 @@
                     }
                 ]
             }
-        },    
+        },
         {
             "apiVersion": "2015-06-15",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[variables('vmnamerelay')]",
             "location": "[resourceGroup().location]",
-             "dependsOn": [
-                 "[concat('Microsoft.Network/networkInterfaces/', variables('nicRelay'))]"
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', variables('nicRelay'))]"
             ],
-              "properties": {
-                  
-               "hardwareProfile": {
+            "properties": {
+                "hardwareProfile": {
                     "vmSize": "[parameters('relayVmSize')]"
                 },
                 "osProfile": {
@@ -209,7 +208,7 @@
                     ]
                 }
             }
-        },        
+        },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(variables('vmnamerelay'),'/', 'SetupRelay')]",
@@ -228,63 +227,85 @@
                         "https://raw.githubusercontent.com/hansenms/azure_templates/master/setup_relay.sh",
                         "https://raw.githubusercontent.com/hansenms/azure_templates/master/azure_login.sh",
                         "https://raw.githubusercontent.com/hansenms/azure_templates/master/get_custom_data.sh"
-                        
                     ],
                     "commandToExecute": "[concat('bash setup_relay.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId(parameters('gadgetronStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && mkdir -p /mnt/gtlog/', variables('vmnamerelay'))]"
                 }
             }
         },
         {
-            "type": "Microsoft.Resources/deployments",
-            "copy": {
-                "name": "nodeloop",
-                "count": "[parameters('numberOfComputeNodes')]"
-            },
-            "name": "[concat(variables('vmprefix'),copyIndex())]",
-            "apiVersion": "2015-01-01",
+            "type": "Microsoft.Compute/virtualMachineScaleSets",
+            "name": "[toLower(variables('vmprefix'))]",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2016-03-30",
             "dependsOn": [
-                "[concat('Microsoft.Network/virtualNetworks/', variables('vnetname'))]",
-                "[concat('Microsoft.Network/networkInterfaces/', variables('nicRelay'))]"
+                "[concat('Microsoft.Network/virtualNetworks/', variables('vnetname'))]"
             ],
+            "sku": {
+                "name": "[parameters('vmSize')]",
+                "tier": "Standard",
+                "capacity": 1
+            },
             "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[variables('gtnodeuri')]",
-                    "contentVersion": "0.0.0.1"
+                "overprovision": "false",
+                "upgradePolicy": {
+                    "mode": "Manual"
                 },
-                "parameters": {
-                    "vmName": {
-                        "value": "[concat(variables('vmprefix'),copyIndex())]"
+                "virtualMachineProfile": {
+                    "storageProfile": {
+                        "osDisk": {
+                            "vhdContainers": [
+                                "[concat('https://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'))]"
+                            ],
+                            "name": "[concat('osdisk',toLower(variables('vmprefix')))]",
+                            "caching": "ReadOnly",
+                            "image": {
+                                "uri": "[concat('https://',variables('storageAccountName'),'.blob.core.windows.net/images/gtimage.vhd')]"
+                            },
+                            "createOption": "FromImage"
+                        }
                     },
-                    "vmSize": {
-                        "value": "[parameters('vmSize')]"
+                    "osProfile": {
+                        "computerNamePrefix": "[toLower(variables('vmprefix'))]",
+                        "adminUsername": "[parameters('adminUsername')]",
+                        "adminPassword": "[parameters('adminPassword')]"
                     },
-                    "adminUsername": {
-                        "value": "[parameters('adminUsername')]"
+                    "networkProfile": {
+                        "networkInterfaceConfigurations": [
+                            {
+                                "name": "[concat(toLower(variables('vmprefix')),'nic')]",
+                                "properties": {
+                                    "primary": "true",
+                                    "ipConfigurations": [
+                                        {
+                                            "name": "[concat(toLower(variables('vmprefix')),'ipconfig')]",
+                                            "properties": {
+                                                "subnet": {
+                                                    "id": "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Network/virtualNetworks/', variables('vnetname'), '/subnets/', variables('vsubnetname'))]"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
                     },
-                    "adminPassword": {
-                        "value": "[parameters('adminPassword')]"
-                    },
-                    "sshKeyValue": {
-                        "value": "[parameters('sshKeyValue')]"                    
-                    },
-                    "vNetName": {
-                        "value": "[variables('vnetname')]"
-                    },
-                    "subNetName": {
-                        "value": "[variables('vsubnetname')]"
-                    },
-                    "storageAccountName": {
-                        "value": "[variables('storageAccountName')]"
-                    },
-                    "logShare": {
-                        "value": "[variables('logshare')]"
-                    },
-                    "dependenciesShare": {
-                        "value": "[variables('dependenciesshare')]"
-                    },
-                    "relayip": {
-                        "value": "[reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress]"
+                    "extensionProfile": {
+                        "extensions": [
+                            {
+                                "name": "configstor",
+                                "properties": {
+                                    "publisher": "Microsoft.OSTCExtensions",
+                                    "type": "CustomScriptForLinux",
+                                    "typeHandlerVersion": "1.4",
+                                    "settings": {
+                                        "fileUris": [
+                                            "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_and_run_docker.sh"
+                                        ],
+                                        "commandToExecute": "[concat('sh mount_and_run_docker.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId(parameters('gadgetronStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' ', reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress)]"
+                                    }
+                                }
+                            }
+                        ]
                     }
                 }
             }
