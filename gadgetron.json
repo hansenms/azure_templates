@@ -8,7 +8,7 @@
             "maxLength": 60
         },
         "adminPassword": {
-            "type": "string",
+            "type": "securestring",
             "minLength": 8
         },
         "disablePasswordAuth": {
@@ -74,9 +74,8 @@
         }
     },
     "variables": {
-        "imagePublisher": "Canonical",
-        "imageOffer": "UbuntuServer",
         "OSDiskName": "GTOsDisk",
+        "securityGroupName": "GadgetronNSG",
         "storageAccountType": "Standard_LRS",
         "publicIPAddressType": "Dynamic",
         "publicIPAddressName": "[concat(resourceGroup().name,'PublicIP')]",
@@ -94,13 +93,38 @@
         "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('vsubnetname'))]",
         "logshare": "[concat('//',parameters('gadgetronStorageAccount'),'.file.core.windows.net/', parameters('gadgetronLogShare'))]",
         "dependenciesshare": "[concat('//',parameters('gadgetronStorageAccount'),'.file.core.windows.net/', parameters('gadgetronDependenciesShare'))]",
-        "gtdockerexturi": "https://raw.githubusercontent.com/hansenms/azure_templates/master/gadgetron_docker_extension.json",
-        "gtnodeuri": "https://raw.githubusercontent.com/hansenms/azure_templates/master/gadgetron_node.json",
-        "configuration_info": "[concat('{ \"group\": \"', resourceGroup().name, '\", \"azure_client_id\": \"', parameters('azure_client_id'),'\", ', '\"azure_tenant_id\": \"', parameters('azure_tenant_id'), '\", ', '\"azure_key\": \"', parameters('azure_key'), '\", ', '\"logshare\": \"', variables('logshare'), '\",', '\"dependenciesshare\": \"', variables('dependenciesshare'), '\", ' , '\"storageaccount\": \"', parameters('gadgetronStorageAccount'), '\" }')]"
+        "configuration_info": "[concat('{ \"group\": \"', resourceGroup().name, '\", \"azure_client_id\": \"', parameters('azure_client_id'),'\", ', '\"azure_tenant_id\": \"', parameters('azure_tenant_id'), '\", ', '\"azure_key\": \"', parameters('azure_key'), '\", ', '\"logshare\": \"', variables('logshare'), '\",', '\"dependenciesshare\": \"', variables('dependenciesshare'), '\", ' , '\"storageaccount\": \"', parameters('gadgetronStorageAccount'), '\" }')]",
+        "computeApiVersion": "2016-03-30",
+        "networkApiVersion": "2016-03-30",
+        "storageApiVersion": "2015-06-15"
     },
     "resources": [
         {
-            "apiVersion": "2015-05-01-preview",
+            "apiVersion": "[variables('networkApiVersion')]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('securityGroupName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH",
+                        "properties": {
+                            "description": "Allows SSH traffic",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "[variables('networkApiVersion')]",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('publicIPAddressName')]",
             "location": "[resourceGroup().location]",
@@ -113,7 +137,7 @@
         },
         {
             "name": "[variables('vnetname')]",
-            "apiVersion": "2015-05-01-preview",
+            "apiVersion": "[variables('networkApiVersion')]",
             "location": "[resourceGroup().location]",
             "type": "Microsoft.Network/virtualNetworks",
             "properties": {
@@ -133,7 +157,7 @@
             }
         },
         {
-            "apiVersion": "2015-05-01-preview",
+            "apiVersion": "[variables('networkApiVersion')]",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[variables('nicRelay')]",
             "location": "[resourceGroup().location]",
@@ -154,11 +178,14 @@
                             }
                         }
                     }
-                ]
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('securityGroupName'))]"
+                }
             }
         },
         {
-            "apiVersion": "2015-06-15",
+            "apiVersion": "[variables('computeApiVersion')]",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[variables('vmnamerelay')]",
             "location": "[resourceGroup().location]",
@@ -212,7 +239,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(variables('vmnamerelay'),'/', 'SetupRelay')]",
-            "apiVersion": "2015-05-01-preview",
+            "apiVersion": "[variables('computeApiVersion')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/', variables('vmnamerelay'))]"
@@ -228,7 +255,7 @@
                         "https://raw.githubusercontent.com/hansenms/azure_templates/master/azure_login.sh",
                         "https://raw.githubusercontent.com/hansenms/azure_templates/master/get_custom_data.sh"
                     ],
-                    "commandToExecute": "[concat('bash setup_relay.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId(parameters('gadgetronStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' && mkdir -p /mnt/gtlog/', variables('vmnamerelay'))]"
+                    "commandToExecute": "[concat('bash setup_relay.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId(parameters('gadgetronStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,variables('storageApiVersion')).key1, ' && mkdir -p /mnt/gtlog/', variables('vmnamerelay'))]"
                 }
             }
         },
@@ -236,7 +263,7 @@
             "type": "Microsoft.Compute/virtualMachineScaleSets",
             "name": "[toLower(variables('vmprefix'))]",
             "location": "[resourceGroup().location]",
-            "apiVersion": "2016-03-30",
+            "apiVersion": "[variables('computeApiVersion')]",
             "dependsOn": [
                 "[concat('Microsoft.Network/virtualNetworks/', variables('vnetname'))]"
             ],
@@ -299,7 +326,7 @@
                                         "fileUris": [
                                             "https://raw.githubusercontent.com/hansenms/azure_templates/master/mount_and_run_docker.sh"
                                         ],
-                                        "commandToExecute": "[concat('sh mount_and_run_docker.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId(parameters('gadgetronStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,'2015-05-01-preview').key1, ' ', reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress)]"
+                                        "commandToExecute": "[concat('sh mount_and_run_docker.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', parameters('gadgetronStorageAccount'), ' ', listKeys(resourceId(parameters('gadgetronStorageGroup'),'Microsoft.Storage/storageAccounts',parameters('gadgetronStorageAccount')) ,variables('storageApiVersion')).key1, ' ', reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress)]"
                                     }
                                 }
                             }
