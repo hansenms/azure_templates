@@ -131,6 +131,20 @@
                             "priority": 100,
                             "direction": "Inbound"
                         }
+                    },
+                    {
+                        "name": "relay",
+                        "properties": {
+                            "description": "Allow traffic from virtual network",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound"
+                        }
                     }
                 ]
             }
@@ -229,8 +243,6 @@
                                     "keyData": "[parameters('sshKeyValue3')]"
                                 }
                             ]
-                            
-                            
                         }
                     },
                     "customData": "[base64(variables('configuration_info'))]"
