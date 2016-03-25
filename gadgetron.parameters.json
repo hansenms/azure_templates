@@ -8,7 +8,13 @@
         "adminPassword": {
             "value": "<PASSWORD FOR NODES>"
         },
-        "sshKeyValue": {
+        "sshKeyValue1": {
+          "value": "<SSH PUBLIC KEY>"
+        },
+        "sshKeyValue2": {
+          "value": "<SSH PUBLIC KEY>"
+        },
+        "sshKeyValue3": {
           "value": "<SSH PUBLIC KEY>"
         },
         "vmSize": {

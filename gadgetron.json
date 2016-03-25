@@ -22,10 +22,22 @@
                 "description": "If the value is set to 'true', then the user may log in with both the password specified AND the SSH Public Keys too.  If the value is set to 'false', then the user may login with the SSH Keys specified only."
             }
         },
-        "sshKeyValue": {
+        "sshKeyValue1": {
             "type": "string",
             "metadata": {
                 "description": "SSH Key Value #1 for use when logging in with the user defined in the adminUsername parameter"
+            }
+        },
+        "sshKeyValue2": {
+            "type": "string",
+            "metadata": {
+                "description": "SSH Key Value #2 for use when logging in with the user defined in the adminUsername parameter"
+            }
+        },
+        "sshKeyValue3": {
+            "type": "string",
+            "metadata": {
+                "description": "SSH Key Value #3 for use when logging in with the user defined in the adminUsername parameter"
             }
         },
         "addressPrefix": {
@@ -206,9 +218,19 @@
                             "publicKeys": [
                                 {
                                     "path": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
-                                    "keyData": "[parameters('sshKeyValue')]"
+                                    "keyData": "[parameters('sshKeyValue1')]"
+                                },
+                                {
+                                    "path": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
+                                    "keyData": "[parameters('sshKeyValue2')]"
+                                },
+                                {
+                                    "path": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
+                                    "keyData": "[parameters('sshKeyValue3')]"
                                 }
                             ]
+                            
+                            
                         }
                     },
                     "customData": "[base64(variables('configuration_info'))]"
