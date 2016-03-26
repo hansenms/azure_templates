@@ -27,6 +27,7 @@ wget https://raw.githubusercontent.com/hansenms/azure_templates/master/get_vmss_
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/increment_vmss_capacity.sh
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/set_vmss_capacity.sh
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/vmss_update.json
+wget https://raw.githubusercontent.com/hansenms/azure_templates/master/delete_failed_nodes.sh
 
 
 chmod +x cloud_monitor.sh
