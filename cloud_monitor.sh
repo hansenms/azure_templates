@@ -167,6 +167,10 @@ while true; do
 
     if [ "$cooldown_counter" -lt 0 ]; then
         log "Cool down check"
+
+	#First a check to see if we have hanging nodes that have not been provisioned properly. We should get rid of them.
+	bash delete_failed_nodes.sh $group $vmss
+
 	if [ "$ideal_nodes" -le "$nodes" ] && [ "$nodes" -gt 0 ]; then
 	    on=$(oldest_node)
 	    lastr=$(echo $on | jq .last_recon | tr -d '"')
