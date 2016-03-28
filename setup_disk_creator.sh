@@ -29,3 +29,4 @@ docker tag $docker_image current_gadgetron
 
 #Deprovision
 waagent -force -deprovision
+rm -rf /var/lib/waagent
