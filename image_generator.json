@@ -19,7 +19,7 @@
             "metadata": {
                 "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
             },
-            "defaultValue": "gadgetronImageGenerator"
+            "defaultValue": "gadgetronimagegenerator"
         },
         "ubuntuOSVersion": {
             "type": "string",
@@ -61,8 +61,8 @@
         "publicIPAddressName": "myPublicIP",
         "publicIPAddressType": "Dynamic",
         "vmStorageAccountContainerName": "vhds",
-        "vmName": "MyUbuntuVM",
-        "vmSize": "Standard_D1",
+        "vmName": "gtDiskCreator",
+        "vmSize": "Standard_D4",
         "virtualNetworkName": "MyVNET",
         "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
         "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
@@ -171,18 +171,7 @@
                         },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
-                    },
-                    "dataDisks": [
-                        {
-                            "name": "datadisk1",
-                            "diskSizeGB": "100",
-                            "lun": 0,
-                            "vhd": {
-                                "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('dataDisk1VhdName'),'.vhd')]"
-                            },
-                            "createOption": "Empty"
-                        }
-                    ]
+                    }
                 },
                 "networkProfile": {
                     "networkInterfaces": [
