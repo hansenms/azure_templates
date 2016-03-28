@@ -1,0 +1,24 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "0.0.0.1",
+    "parameters": {
+        "adminUsername": {
+            "value": "<ADMIN USERNAME>"
+        },
+        "adminPassword": {
+            "value": "<ADMIN PASSWORD>"
+        },
+        "docker_username": {
+            "value": "<DOCKER USER>"
+        },
+        "docker_password": {
+            "value": "<DOCKER PASSWORD>"
+        },
+        "docker_email": {
+            "value": "<DOCKER EMAIL>"
+        },
+        "docker_image": {
+            "value": "<DOCKER IMAGE>"
+        }
+    }
+}
