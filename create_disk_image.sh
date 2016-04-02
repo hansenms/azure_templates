@@ -14,4 +14,5 @@ time azure group create --name ${group_name} --location ${location} --template-f
 
 command="sh -c \"wget https://raw.githubusercontent.com/hansenms/azure_templates/master/setup_disk_creator.sh && sudo ./setup_disk_creator.sh ${docker_username} ${docker_password} ${docker_email} ${docker_image}\""
 
-ssh -o StrictHostKeyChecking=no gadgetron@gadgetronimagegenerator.${location}.cloudapp.azure.com $command
+ssh -o StrictHostKeyChecking=no gadgetron@${group_name}vm.${location}.cloudapp.azure.com $command
+

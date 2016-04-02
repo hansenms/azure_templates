@@ -20,13 +20,6 @@
                 "description": "SSH Key Value #1 for use when logging in with the user defined in the adminUsername parameter"
             }
         },
-        "dnsLabelPrefix": {
-            "type": "string",
-            "metadata": {
-                "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
-            },
-            "defaultValue": "gadgetronimagegenerator"
-        },
         "ubuntuOSVersion": {
             "type": "string",
             "defaultValue": "14.04.2-LTS",
@@ -41,6 +34,7 @@
         }
     },
     "variables": {
+        "dnsLabelPrefix": "[concat(resourceGroup().name, 'vm')]"
         "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'salinuxvm')]",
         "location": "[resourceGroup().location]",
         "dataDisk1VhdName": "datadisk1",
@@ -82,7 +76,7 @@
             "properties": {
                 "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
                 "dnsSettings": {
-                    "domainNameLabel": "[parameters('dnsLabelPrefix')]"
+                    "domainNameLabel": "[variables('dnsLabelPrefix')]"
                 }
             }
         },
@@ -197,11 +191,11 @@
     "outputs": {
         "hostname": {
             "type": "string",
-            "value": "[concat(parameters('dnsLabelPrefix'), '.', variables('location'), '.cloudapp.azure.com')]"
+            "value": "[concat(variables('dnsLabelPrefix'), '.', variables('location'), '.cloudapp.azure.com')]"
         },
         "sshCommand": {
             "type": "string",
-            "value": "[concat('ssh ', parameters('adminUsername'), '@', parameters('dnsLabelPrefix'), '.', variables('location'), '.cloudapp.azure.com')]"
+            "value": "[concat('ssh ', parameters('adminUsername'), '@', variables('dnsLabelPrefix'), '.', variables('location'), '.cloudapp.azure.com')]"
         }
     }
 }
