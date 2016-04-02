@@ -34,7 +34,7 @@
         }
     },
     "variables": {
-        "dnsLabelPrefix": "[concat(resourceGroup().name, 'vm')]"
+        "dnsLabelPrefix": "[toLower(concat(resourceGroup().name, 'vm'))]",
         "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'salinuxvm')]",
         "location": "[resourceGroup().location]",
         "dataDisk1VhdName": "datadisk1",
@@ -143,9 +143,9 @@
                 "osProfile": {
                     "computerName": "[variables('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
-                    "adminPassword": "[parameters('adminPassword')]"
+                    "adminPassword": "[parameters('adminPassword')]",
                     "linuxConfiguration": {
-                        "disablePasswordAuthentication": "[parameters('disablePasswordAuth')]",
+                        "disablePasswordAuthentication": "False",
                         "ssh": {
                             "publicKeys": [
                                 {
