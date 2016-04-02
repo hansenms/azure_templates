@@ -8,17 +8,8 @@
         "adminPassword": {
             "value": "<ADMIN PASSWORD>"
         },
-        "docker_username": {
-            "value": "<DOCKER USER>"
-        },
-        "docker_password": {
-            "value": "<DOCKER PASSWORD>"
-        },
-        "docker_email": {
-            "value": "<DOCKER EMAIL>"
-        },
-        "docker_image": {
-            "value": "<DOCKER IMAGE>"
+        "sshKeyValue1": {
+            "value": "<SSH KEY>"
         }
     }
 }

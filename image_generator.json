@@ -14,6 +14,12 @@
                 "description": "Password for the Virtual Machine."
             }
         },
+        "sshKeyValue1": {
+            "type": "string",
+            "metadata": {
+                "description": "SSH Key Value #1 for use when logging in with the user defined in the adminUsername parameter"
+            }
+        },
         "dnsLabelPrefix": {
             "type": "string",
             "metadata": {
@@ -32,18 +38,6 @@
             "metadata": {
                 "description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version. Allowed values: 12.04.5-LTS, 14.04.2-LTS, 15.10."
             }
-        },
-        "docker_username": {
-            "type": "string"            
-        },
-        "docker_password": {
-            "type": "string"
-        },
-        "docker_email": {
-            "type": "string"
-        },
-        "docker_image": {
-            "type": "string"
         }
     },
     "variables": {
@@ -156,6 +150,17 @@
                     "computerName": "[variables('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]"
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": "[parameters('disablePasswordAuth')]",
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
+                                    "keyData": "[parameters('sshKeyValue1')]"
+                                }
+                            ]
+                        }
+                    }           
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -185,26 +190,6 @@
                         "enabled": "true",
                         "storageUri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net')]"
                     }
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(variables('vmName'),'/', 'SetupImageCreator')]",
-            "apiVersion": "[variables('computeApiVersion')]",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
-            ],
-            "properties": {
-                "publisher": "Microsoft.OSTCExtensions",
-                "type": "CustomScriptForLinux",
-                "typeHandlerVersion": "1.4",
-                "settings": {
-                    "fileUris": [
-                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/setup_disk_creator.sh"
-                    ],
-                    "commandToExecute": "[concat('bash setup_disk_creator.sh ', parameters('docker_username'), ' ', parameters('docker_password'), ' ', parameters('docker_email'), ' ', parameters('docker_image'))]"
                 }
             }
         }
