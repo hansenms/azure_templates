@@ -5,7 +5,12 @@ template_file=$2
 template_parameters=$3
 image_uri=$4
 
-region="eastus"
+if [ $# -le 4 ]; then
+    region="eastus"
+else
+    region=$5
+fi
+
 storage_account="$(echo $group_name| tr '[:upper:]' '[:lower:]'| tr -d '-')sa"
 
 azure group create --name ${group_name} --location ${region}
