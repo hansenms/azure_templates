@@ -17,7 +17,7 @@ apt-get install -y apparmor
 apt-get install -y docker-engine
 service docker start
 apt-get install -y curl
-curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash –
+curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash
 apt-get install -y nodeJS
 npm install -g azure-cli
 apt-get -qq install cifs-utils -y
