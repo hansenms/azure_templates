@@ -16,10 +16,12 @@ sudo apt-get install -y linux-image-extra-$(uname -r)
 apt-get install -y apparmor
 apt-get install -y docker-engine
 service docker start
-apt-get install -y nodejs-legacy jq libxml2-utils emacs wget curl
-apt-get install -y npm
-npm install -g azure-cli
-#npm install -g https://github.com/AzureRT/azure-xplat-cli/archive/vmss.tar.gz
+sudo apt-get install curl
+curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash –
+sudo apt-get install -y nodeJS
+node –v (v4.4.2)
+npm –v (2.15.0)
+sudo npm install -g azure-cli
 apt-get -qq install cifs-utils -y
 
 #Download the requested image
