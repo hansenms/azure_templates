@@ -18,8 +18,8 @@ apt-get install -y docker-engine
 service docker start
 apt-get install -y nodejs-legacy jq libxml2-utils emacs wget curl
 apt-get install -y npm
-#npm install -g azure-cli
-npm install -g https://github.com/AzureRT/azure-xplat-cli/archive/vmss.tar.gz
+npm install -g azure-cli
+#npm install -g https://github.com/AzureRT/azure-xplat-cli/archive/vmss.tar.gz
 apt-get -qq install cifs-utils -y
 
 #Download the requested image
