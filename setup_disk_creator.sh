@@ -16,12 +16,10 @@ sudo apt-get install -y linux-image-extra-$(uname -r)
 apt-get install -y apparmor
 apt-get install -y docker-engine
 service docker start
-sudo apt-get install curl
+apt-get install -y curl
 curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash –
-sudo apt-get install -y nodeJS
-node –v (v4.4.2)
-npm –v (2.15.0)
-sudo npm install -g azure-cli
+apt-get install -y nodeJS
+npm install -g azure-cli
 apt-get -qq install cifs-utils -y
 
 #Download the requested image
