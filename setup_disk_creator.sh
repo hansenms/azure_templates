@@ -21,6 +21,7 @@ curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash
 apt-get install -y nodeJS
 npm install -g azure-cli
 apt-get -qq install cifs-utils -y
+apt-get install -y jq
 
 #Download the requested image
 docker login -u $docker_username -p $docker_password -e $docker_email
