@@ -14,14 +14,16 @@ sleep 3
 mount -a
 sleep 10
 
-while ! grep -qs '/mnt/gtlog' /proc/mounts; do
-    sleep 1
-    mount -a 
+while [ -z "$(df | grep /mnt/gtlog)" ]; do
+    umount /mnt/gtlog
+    mount /mnt/gtlog
+    sleep 10
 done
 
-while ! grep -qs '/mnt/gtdependencies' /proc/mounts; do
-    sleep 1
-    mount -a
+while [ -z "$(df | grep /mnt/gtdependencies)" ]; do
+    umount /mnt/gtlog
+    mount /mnt/gtlog
+    sleep 10
 done
 
 mkdir -p /mnt/gtlog/$(hostname)
