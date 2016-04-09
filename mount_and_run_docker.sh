@@ -10,7 +10,9 @@ mkdir -p /mnt/gtlog
 mkdir -p /mnt/gtdependencies 
 echo "${logshare} /mnt/gtlog cifs vers=3.0,username=${shareaccount},password=${sharekey},dir_mode=0777,file_mode=0777" >> /etc/fstab
 echo "${dependenciesshare} /mnt/gtdependencies cifs vers=3.0,username=${shareaccount},password=${sharekey},dir_mode=0777,file_mode=0777" >> /etc/fstab
+sleep 3
 mount -a
+sleep 10
 
 while ! grep -qs '/mnt/gtlog' /proc/mounts; do
     sleep 1
