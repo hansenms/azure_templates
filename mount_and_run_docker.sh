@@ -16,12 +16,14 @@ sleep 10
 
 while [ -z "$(df | grep /mnt/gtlog)" ]; do
     umount /mnt/gtlog
+    sleep 3
     mount /mnt/gtlog
     sleep 10
 done
 
 while [ -z "$(df | grep /mnt/gtdependencies)" ]; do
     umount /mnt/gtlog
+    sleep 3
     mount /mnt/gtlog
     sleep 10
 done
