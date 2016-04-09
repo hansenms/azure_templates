@@ -22,9 +22,9 @@ while [ -z "$(df | grep /mnt/gtlog)" ]; do
 done
 
 while [ -z "$(df | grep /mnt/gtdependencies)" ]; do
-    umount /mnt/gtlog
+    umount /mnt/gtdependencies
     sleep 3
-    mount /mnt/gtlog
+    mount /mnt/gtdependencies
     sleep 10
 done
 
