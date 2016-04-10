@@ -14,19 +14,15 @@ sleep 3
 mount -a
 sleep 10
 
-while [ -z "$(df | grep /mnt/gtlog)" ]; do
-    umount /mnt/gtlog
-    sleep 3
-    mount /mnt/gtlog
-    sleep 10
-done
+if [ -z "$(df | grep /mnt/gtlog)" ]; then
+    echo "Failed to mount gtlog"
+    exit 113
+fi
 
-while [ -z "$(df | grep /mnt/gtdependencies)" ]; do
-    umount /mnt/gtdependencies
-    sleep 3
-    mount /mnt/gtdependencies
-    sleep 10
-done
+if [ -z "$(df | grep /mnt/gtdependencies)" ]; then
+    echo "Failed to mount gtdependencies"
+    exit 113
+fi
 
 mkdir -p /mnt/gtlog/$(hostname)
 
