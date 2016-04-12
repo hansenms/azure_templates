@@ -20,7 +20,7 @@ while [ "$n" -lt "$nodes" ]; do
     ip=$(echo $nic_list | jq "map(select(.id == \"$nicid\")) | .[0].ipConfigurations[0].privateIPAddress" | tr -d '"')
     pstate=$(echo $node_list| jq .[$n].provisioningState | tr -d '"')
     epstate=$(echo $node_list| jq .[$n].resources[0].provisioningState | tr -d '"')
-    logfile="/mnt/gtlog/${nodename}/gadgetron.log"
+    logfile="/gtmount/gtlog/${nodename}/gadgetron.log"
     LT="MISSING LOG FILE !!"
     if [ -e "$logfile" ]; then
 	LT=$(tac $logfile | grep -m1 -oP '(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})')
