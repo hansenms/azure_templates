@@ -281,7 +281,7 @@
                         "https://raw.githubusercontent.com/hansenms/azure_templates/development/azure_login.sh",
                         "https://raw.githubusercontent.com/hansenms/azure_templates/development/get_custom_data.sh"
                     ],
-                    "commandToExecute": "[concat('bash setup_relay.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', variables('storageAccountName'), ' ', listKeys(resourceId(resourceGroup().name,'Microsoft.Storage/storageAccounts',variables('storageAccountName')) ,variables('storageApiVersion')).key1, ' && mkdir -p /gtmount/gtlog/', variables('vmnamerelay'))]"
+                    "commandToExecute": "bash setup_relay.sh"
                 }
             }
         },
@@ -352,7 +352,7 @@
                                         "fileUris": [
                                             "https://raw.githubusercontent.com/hansenms/azure_templates/development/mount_and_run_docker.sh"
                                         ],
-                                        "commandToExecute": "[concat('sh mount_and_run_docker.sh ', variables('logshare'), ' ', variables('dependenciesshare'), ' ', variables('storageAccountName'), ' ', listKeys(resourceId(resourceGroup().name,'Microsoft.Storage/storageAccounts',variables('storageAccountName')) ,variables('storageApiVersion')).key1, ' ', reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress)]"
+                                        "commandToExecute": "[concat('sh mount_and_run_docker.sh ', reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress), ' ', reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress)]"
                                     }
                                 }
                             }
