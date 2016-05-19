@@ -352,7 +352,7 @@
                                         "fileUris": [
                                             "https://raw.githubusercontent.com/hansenms/azure_templates/development/mount_and_run_docker.sh"
                                         ],
-                                        "commandToExecute": "[concat('sh mount_and_run_docker.sh ', reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress), ' ', reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress)]"
+                                        "commandToExecute": "[concat('sh mount_and_run_docker.sh ', reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress, ' ', reference(variables('nicRelay')).ipConfigurations[0].properties.privateIPAddress)]"
                                     }
                                 }
                             }
