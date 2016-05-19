@@ -2,7 +2,8 @@
 
 wget https://raw.githubusercontent.com/hansenms/azure_templates/development/setup_relay_shares.sh
 
-echo "sh mount_and_run_docker.sh $logshare $dependenciesshare $storageaccount $share_key 192.168.1.1"
+sh setup_relay_shares.sh
+
 sh mount_and_run_docker.sh $(hostname) 192.168.1.1
 
 sh azure_login.sh
