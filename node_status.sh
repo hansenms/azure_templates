@@ -10,8 +10,8 @@ nodes=$(echo $node_list| jq '. | length')
 echo "Status of $group_name, $vmss_name"
 echo "Number of nodes: $nodes\n"
 n=0
-echo "Node \t| Id \t| Node name         \t| IP     \t| Provisioning \t| Extension \t| Logfile                                      \t| Log modified    \t|" 
-echo "-----------------------------------------------------------------------------------------------------------------------------------------------------------------"
+echo "Node \t| Id \t| Node name         \t| IP     \t| Provisioning \t| Extension \t| Logfile                                            \t| Log modified    \t|" 
+echo "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
 
 while [ "$n" -lt "$nodes" ]; do
     instanceid=$(echo $node_list | jq .[$n] | jq .instanceId | tr -d '"')

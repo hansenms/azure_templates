@@ -296,7 +296,7 @@
             "sku": {
                 "name": "[parameters('vmSize')]",
                 "tier": "Standard",
-                "capacity": 1
+                "capacity": 0
             },
             "properties": {
                 "overprovision": "false",
