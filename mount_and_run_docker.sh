@@ -1,22 +1,22 @@
 #!/bin/bash
 
-smbhostname=$1
+relayhostname=$1
 relay_ip=$2
 
 mkdir -p /gtmount/gtlog
 mkdir -p /gtmount/gtdependencies
-echo "//${smbhostname}/gtlog /gtmount/gtlog cifs guest,dir_mode=0777,file_mode=0777" >> /etc/fstab
-echo "//${smbhostname}/gtdependencies /gtmount/gtdependencies cifs guest,dir_mode=0777,file_mode=0777" >> /etc/fstab
+echo "${relayhostname}:/home/shares/gtlog /gtmount/gtlog nfs rsize=8192,wsize=8192,timeo=14,intr" >> /etc/fstab
+echo "${relayhostname}:/home/shares/gtdependencies /gtmount/gtdependencies nfs rsize=8192,wsize=8192,timeo=14,intr" >> /etc/fstab
 sleep 3
 mount -a
 sleep 10
 
-if [ -z "$(df | grep /gtmount/gtlog)" ]; then
+if [ -z "$(mount | grep /gtmount/gtlog)" ]; then
     echo "Failed to mount gtlog"
     exit 113
 fi
 
-if [ -z "$(df | grep /gtmount/gtdependencies)" ]; then
+if [ -z "$(mount | grep /gtmount/gtdependencies)" ]; then
     echo "Failed to mount gtdependencies"
     exit 113
 fi
