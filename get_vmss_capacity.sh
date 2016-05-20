@@ -6,7 +6,7 @@ vmss_name=$2
 ecode=124
 try_count=0
 while [ "$ecode" -eq 124 ] && [ "$try_count" -lt  10 ]; do
-    capacity=$(timeout 10 sh -c "azure vmss get $group_name $vmss_name --json | jq .sku.capacity")
+    capacity=$(timeout 10 sh -c "azure vmss show $group_name $vmss_name --json | jq .sku.capacity")
     ecode=$?
     try_count=`expr $try_count + 1`
 done

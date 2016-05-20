@@ -23,7 +23,17 @@ while [ "$n" -lt "$nodes" ]; do
     logfile="/gtmount/gtlog/${nodename}/gadgetron.log"
     LT="MISSING LOG FILE !!"
     if [ -e "$logfile" ]; then
-	LT=$(tac $logfile | grep -m1 -oP '(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})')
+	ecode=124
+	try_count=0
+	while [ "$ecode" -eq 124 ] && [ "$try_count" -lt  10 ]; do
+    		LT=$(timeout 2 sh -c "tac $logfile | grep -m1 -oP '(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})'")
+    		ecode=$?
+    		try_count=`expr $try_count + 1`
+	done
+
+	if [ "$try_count" -ge 10 ]; then
+   		LT="TIMEOUT ON LOG FILE"
+	fi
     fi
     echo "$n \t| $instanceid \t| $nodename \t| $ip \t| $pstate \t| $epstate \t| $logfile \t| $LT \t|" 
     n=`expr $n + 1`
