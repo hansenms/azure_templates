@@ -12,6 +12,10 @@ location="eastus"
 
 time azure group create --name ${group_name} --location ${location} --template-file ${template_file} --parameters-file ${template_parameters}
 
+while [ $(azure vm show ${group_name} gtDiskCreator --json | jq -r .provisioningState) != "Succeeded" ]; do
+    echo "Waiting for VM to deploy"
+done
+
 command="wget https://raw.githubusercontent.com/hansenms/azure_templates/master/setup_disk_creator.sh"
 ssh -o StrictHostKeyChecking=no gadgetron@${group_name}vm.${location}.cloudapp.azure.com $command
 
