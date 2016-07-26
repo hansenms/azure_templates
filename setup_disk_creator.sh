@@ -5,6 +5,10 @@ docker_password=$2
 docker_email=$3
 docker_image=$4
 
+apt-get clean
+rm /var/lib/apt/lists/*
+rm /var/lib/apt/lists/partial/*
+apt-get clean
 apt-get update
 apt-get install -y apt-transport-https ca-certificates emacs nfs-common nfs-kernel-server jq
 sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
