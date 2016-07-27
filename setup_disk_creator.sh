@@ -6,8 +6,8 @@ docker_email=$3
 docker_image=$4
 
 apt-get clean
-rm /var/lib/apt/lists/*
-rm /var/lib/apt/lists/partial/*
+rm -rf /var/lib/apt/lists/*
+rm -rf /var/lib/apt/lists/partial/*
 apt-get clean
 apt-get update
 apt-get install -y apt-transport-https ca-certificates emacs nfs-common nfs-kernel-server jq
