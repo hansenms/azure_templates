@@ -16,6 +16,8 @@ while [ $(azure vm show ${group_name} gtDiskCreator --json | jq -r .provisioning
     echo "Waiting for VM to deploy"
 done
 
+sleep 20
+
 command="wget https://raw.githubusercontent.com/hansenms/azure_templates/master/setup_disk_creator.sh"
 ssh -o StrictHostKeyChecking=no gadgetron@${group_name}vm.${location}.cloudapp.azure.com $command
 
