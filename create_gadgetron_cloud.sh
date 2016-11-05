@@ -18,10 +18,13 @@ azure storage account create --kind Storage --sku-name LRS --location ${region} 
 
 key=$(azure storage account keys list -g ${group_name} ${storage_account} --json | jq .[0].value | tr -d '"')
 
+echo "Storage account: ${storage_account}"
+echo "Storage key: ${key}"
+
 azure storage container create --account-name ${storage_account} --account-key ${key} images
 azure storage blob copy start --dest-account-name ${storage_account} --dest-account-key ${key} --source-uri ${image_uri} --dest-container images --dest-blob gtimage.vhd
 
-while [ $(azure storage blob copy show -a ${storage_account} -k ${key} images gtimage.vhd --json| jq .copy.status| tr -d '"') == "pending" ]; do 
+while [ $(azure storage blob copy show -a ${storage_account} -k ${key} images gtimage.vhd --json| jq .copy.status| tr -d '"') == "Pending" ]; do 
     echo "Copying" && sleep 5
 done
 echo "Copying done"
