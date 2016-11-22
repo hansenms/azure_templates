@@ -4,7 +4,7 @@ group_name=$1
 vmss_name=$2
 
 node_list=$(azure vmssvm list ${group_name} ${vmss_name} --json)
-nic_list=$(azure network nic list -g ${group_name} --json)
+nic_list=$(azure network nic list -g ${group_name} -m ${vmss_name} --json)
 nodes=$(echo $node_list| jq '. | length')
 
 echo "Status of $group_name, $vmss_name"
