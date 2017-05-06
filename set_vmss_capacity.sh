@@ -8,6 +8,6 @@ timestamp() {
   date +"%H%M%S"
 }
 
-sku_name=$(azure vmss show ${group_name} ${vmss_name} --json | jq .sku.name | tr -d '"')
+sku_name=$(az vmss show -g ${group_name} -n ${vmss_name} | jq .sku.name | tr -d '"')
 
-azure group deployment create -g ${group_name} -n vmss_update$(timestamp) -m Incremental --template-file vmss_update.json -p "{\"vmssname\" : {\"value\": \"${vmss_name}\"}, \"vmsize\": {\"value\": \"${sku_name}\"}, \"capacity\" : {\"value\": ${capacity}}}"
+az group deployment create -g ${group_name} -n vmss_update$(timestamp) -m Incremental --template-file vmss_update.json -p "{\"vmssname\" : {\"value\": \"${vmss_name}\"}, \"vmsize\": {\"value\": \"${sku_name}\"}, \"capacity\" : {\"value\": ${capacity}}}"

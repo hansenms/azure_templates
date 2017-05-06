@@ -7,7 +7,7 @@ ip=$3
 ecode=124
 try_count=0
 while [ "$ecode" -eq 124 ] && [ "$try_count" -lt  10 ]; do
-    nic=$(timeout 10 sh -c "azure network nic list -g $group -m $vmss --json|jq 'map(select(.ipConfigurations[0].privateIPAddress == \"${ip}\")) | .[0].id ' | tr -d '\"'")
+    nic=$(timeout 10 sh -c "az vmss nic list -g $group --vmss-name $vmss|jq 'map(select(.ipConfigurations[0].privateIPAddress == \"${ip}\")) | .[0].id ' | tr -d '\"'")
     ecode=$?
     try_count=`expr $try_count + 1`
 done
@@ -19,7 +19,7 @@ fi
 ecode=124
 try_count=0
 while [ "$ecode" -eq 124 ] && [ "$try_count" -lt  10 ]; do
-    instanceid=$(timeout 10 sh -c "azure vmssvm list -g $group -n $vmss --json| jq 'map(select(.networkProfile.networkInterfaces[0].id == \"$nic\"))| .[0].instanceId'|tr -d '\"'")
+    instanceid=$(timeout 10 sh -c "az vmss list-instances -g $group -n $vmss | jq 'map(select(.networkProfile.networkInterfaces[0].id == \"$nic\"))| .[0].instanceId'|tr -d '\"'")
     ecode=$?
     try_count=`expr $try_count + 1`
 done

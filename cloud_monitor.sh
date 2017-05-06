@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Cloud monitoring for Gadgetron Azure Cloud
-# Michael S. Hansen (michael.hansen@nih.gov
+# Michael S. Hansen (michael.hansen@nih.gov)
 
 scaleup_interval=5
 activity_time=60
@@ -68,7 +68,7 @@ number_of_active_nodes()
 delete_node()
 {
     log "Deallocating node $1"
-    azure vmss delete-instances $group $vmss $1 
+    az vmss delete-instances -g $group -n $vmss --instance-ids $1 
     log "Node $1 deallocated"
 }
 

@@ -13,7 +13,7 @@ location="eastus"
 time az group create --name ${group_name} --location ${location}
 time az group deployment create --resource-group ${group_name} --template-file ${template_file} --parameters @${template_parameters}
 
-while [ $(azure vm show --resource-group ${group_name} --name gtDiskCreator | jq -r .provisioningState) != "Succeeded" ]; do
+while [ $(az vm show -g ${group_name} -n gtDiskCreator | jq -r .provisioningState) != "Succeeded" ]; do
     echo "Waiting for VM to deploy"
 done
 

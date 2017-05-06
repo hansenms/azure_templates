@@ -13,21 +13,21 @@ fi
 
 storage_account="$(echo $group_name| tr '[:upper:]' '[:lower:]'| tr -d '-')sa"
 
-azure group create --name ${group_name} --location ${region}
-azure storage account create --kind Storage --sku-name LRS --location ${region} -g ${group_name} ${storage_account}
+az group create --name ${group_name} --location ${region}
+az storage account create --kind Storage --sku Standard_LRS --location ${region} -g ${group_name} -n ${storage_account}
 
-key=$(azure storage account keys list -g ${group_name} ${storage_account} --json | jq .[0].value | tr -d '"')
+key=$(az storage account keys list -g ${group_name} -n ${storage_account} | jq .[0].value | tr -d '"')
 
 echo "Storage account: ${storage_account}"
 echo "Storage key: ${key}"
 
-azure storage container create --account-name ${storage_account} --account-key ${key} images
-azure storage blob copy start --dest-account-name ${storage_account} --dest-account-key ${key} --source-uri ${image_uri} --dest-container images --dest-blob gtimage.vhd
+az storage container create --account-name ${storage_account} --account-key ${key} -n images
+az storage blob copy start --account-name ${storage_account} --account-key ${key} --source-uri ${image_uri} --destination-container images --destination-blob gtimage.vhd
 
-while [ $(azure storage blob copy show -a ${storage_account} -k ${key} images gtimage.vhd --json| jq .copy.status| tr -d '"') == "Pending" ]; do 
+while [ $(az storage blob show --account-name ${storage_account} --account-key ${key} --container-name images --name gtimage.vhd| jq .properties.copy.status| tr -d '"') == "pending" ]; do 
     echo "Copying" && sleep 5
 done
 echo "Copying done"
 
-#Actually deploy the cloud
-time azure group deployment create -g ${group_name} --parameters-file ${template_parameters} --template-file ${template_file}
+#Finally create deployment
+time az group deployment create -g ${group_name} --parameters @${template_parameters} --template-file ${template_file}
