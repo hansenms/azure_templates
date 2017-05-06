@@ -17,7 +17,7 @@ while [ "$n" -lt "$nodes" ]; do
     instanceid=$(echo $node_list | jq .[$n] | jq .instanceId | tr -d '"')
     nodename=$(echo $node_list | jq .[$n] | jq .osProfile.computerName | tr -d '"')
     nicid=$(echo $node_list | jq .[$n] | jq .networkProfile.networkInterfaces[0].id | tr -d '"')
-    ip=$(echo $nic_list | jq "map(select(.id == \"$nicid\")) | .[0].ipConfigurations[0].privateIPAddress" | tr -d '"')
+    ip=$(echo $nic_list | jq "map(select(.id == \"$nicid\")) | .[0].ipConfigurations[0].privateIpAddress" | tr -d '"')
     pstate=$(echo $node_list| jq .[$n].provisioningState | tr -d '"')
     epstate=$(echo $node_list| jq .[$n].resources[0].provisioningState | tr -d '"')
     logfile="/gtmount/gtlog/${nodename}/gadgetron.log"

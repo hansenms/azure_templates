@@ -7,7 +7,7 @@ ip=$3
 ecode=124
 try_count=0
 while [ "$ecode" -eq 124 ] && [ "$try_count" -lt  10 ]; do
-    nic=$(timeout 10 sh -c "az vmss nic list -g $group --vmss-name $vmss|jq 'map(select(.ipConfigurations[0].privateIPAddress == \"${ip}\")) | .[0].id ' | tr -d '\"'")
+    nic=$(timeout 10 sh -c "az vmss nic list -g $group --vmss-name $vmss|jq 'map(select(.ipConfigurations[0].privateIpAddress == \"${ip}\")) | .[0].id ' | tr -d '\"'")
     ecode=$?
     try_count=`expr $try_count + 1`
 done
