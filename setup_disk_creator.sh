@@ -11,7 +11,7 @@ rm -rf /var/lib/apt/lists/partial/*
 apt-get clean
 apt-get update
 apt-get install -y apt-transport-https ca-certificates emacs nfs-common nfs-kernel-server jq
-sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
 echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" > /etc/apt/sources.list.d/docker.list
 apt-get update
 apt-get purge lxc-docker
@@ -21,9 +21,9 @@ apt-get install -y apparmor
 apt-get install -y docker-engine
 service docker start
 apt-get install -y curl
-curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash
-apt-get install -y nodeJS
-npm install -g azure-cli
+echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ wheezy main" | tee /etc/apt/sources.list.d/azure-cli.list
+apt-key adv --keyserver packages.microsoft.com --recv-keys 417A0893
+apt-get update && apt-get install -y azure-cli
 apt-get -qq install cifs-utils -y
 apt-get install -y jq
 
