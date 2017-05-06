@@ -10,9 +10,10 @@ docker_image=$7
 
 location="eastus"
 
-time azure group create --name ${group_name} --location ${location} --template-file ${template_file} --parameters-file ${template_parameters}
+time az group create --name ${group_name} --location ${location}
+time az group deployment create --resource-group ${group_name} --template-file ${template_file} --parameters @${template_parameters}
 
-while [ $(azure vm show ${group_name} gtDiskCreator --json | jq -r .provisioningState) != "Succeeded" ]; do
+while [ $(azure vm show --resource-group ${group_name} --name gtDiskCreator | jq -r .provisioningState) != "Succeeded" ]; do
     echo "Waiting for VM to deploy"
 done
 
