@@ -2,8 +2,7 @@
 
 docker_username=$1
 docker_password=$2
-docker_email=$3
-docker_image=$4
+docker_image=$3
 
 apt-get clean
 rm -rf /var/lib/apt/lists/*
@@ -28,7 +27,7 @@ apt-get -qq install cifs-utils -y
 apt-get install -y jq
 
 #Download the requested image
-docker login -u $docker_username -p $docker_password -e $docker_email
+docker login -u $docker_username -p $docker_password
 docker pull $docker_image
 docker tag $docker_image current_gadgetron
 

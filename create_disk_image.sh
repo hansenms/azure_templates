@@ -5,8 +5,7 @@ template_file=$2
 template_parameters=$3
 docker_username=$4
 docker_password=$5
-docker_email=$6
-docker_image=$7
+docker_image=$6
 
 location="eastus"
 
@@ -22,7 +21,7 @@ sleep 20
 command="wget https://raw.githubusercontent.com/hansenms/azure_templates/master/setup_disk_creator.sh"
 ssh -o StrictHostKeyChecking=no gadgetron@${group_name}vm.${location}.cloudapp.azure.com $command
 
-command="sudo sh ./setup_disk_creator.sh ${docker_username} ${docker_password} ${docker_email} ${docker_image}"
+command="sudo sh ./setup_disk_creator.sh ${docker_username} ${docker_password} ${docker_image}"
 ssh -o StrictHostKeyChecking=no gadgetron@${group_name}vm.${location}.cloudapp.azure.com $command
 
 sh ./create_image_from_vm.sh ${group_name}  gtDiskCreator
