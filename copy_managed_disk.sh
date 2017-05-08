@@ -53,7 +53,10 @@ az storage blob copy start --account-name ${storage_account} --account-key ${key
 #Now wait while this copy happening. This could take a while.
 while [ $(az storage blob show --account-name ${storage_account} --account-key ${key} --container-name $target_container --name $target_blob_name| jq .properties.copy.status| tr -d '"') == "pending" ]; do 
     progress=$(az storage blob show --account-name ${storage_account} --account-key ${key} --container-name ${target_container} --name ${target_blob_name} | jq -r .properties.copy.progress)
-    echo "Copying: $progress" && sleep 5
+    done_count=$(echo $progress | sed 's,\([0-9]*\)/\([0-9]*\),\1,g')
+    total_count=$(echo $progress | sed 's,\([0-9]*\)/\([0-9]*\),\2,g')
+    progress_percent=$((100 * $done_count / $total_count))
+    echo "Copying: $progress ($progress_percent %)" && sleep 5
 done
 echo "Copying done"
 

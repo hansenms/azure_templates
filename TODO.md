@@ -7,7 +7,7 @@ To Do List
   * Add managed disk ID to template
   * Finish script for copying managed disks
     * Should only create group if it doesn't exist
-    * Can we make a progress bar for copying?? 
+    * Estimate completion time 
   * Remove storage account from main template. Not needed. 
   * Remove storage account from image generator. Should not be needed. 
 * Add ability to disk creator to run in different region. 
