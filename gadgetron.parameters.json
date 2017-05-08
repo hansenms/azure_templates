@@ -31,6 +31,10 @@
         },
         "azure_key": {
             "value": "<KEY>"
+        },
+        "managedDiskImageID": {
+            "value": "<DISK IMAGE ID>"
         }
+
    }
 }

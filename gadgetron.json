@@ -56,6 +56,13 @@
             "type": "int",
             "defaultValue": 2
         },
+        "sizeOfDataDiskInGB": {
+            "type": "int",
+            "defaultValue": 1023
+        },
+        "managedDiskImageID": {
+            "type": "string"
+        },
         "gadgetronLogShare": {
             "type": "string",
             "defaultValue": "gtlogs"
@@ -98,9 +105,9 @@
         "logshare": "[concat('//',variables('storageAccountName'),'.file.core.windows.net/', parameters('gadgetronLogShare'))]",
         "dependenciesshare": "[concat('//',variables('storageAccountName'),'.file.core.windows.net/', parameters('gadgetronDependenciesShare'))]",
         "configuration_info": "[concat('{ \"group\": \"', resourceGroup().name, '\", \"azure_client_id\": \"', parameters('azure_client_id'),'\", ', '\"azure_tenant_id\": \"', parameters('azure_tenant_id'), '\", ', '\"azure_key\": \"', parameters('azure_key'), '\", ', '\"logshare\": \"', variables('logshare'), '\",', '\"dependenciesshare\": \"', variables('dependenciesshare'), '\", ' , '\"storageaccount\": \"', variables('storageAccountName'), '\" }')]",
-        "computeApiVersion": "2016-03-30",
-        "networkApiVersion": "2016-03-30",
-        "storageApiVersion": "2015-06-15"
+        "computeApiVersion": "2017-03-30",
+        "networkApiVersion": "2017-04-01",
+        "storageApiVersion": "2017-06-01"
     },
     "resources": [
         {
@@ -240,18 +247,40 @@
                     "customData": "[base64(variables('configuration_info'))]"
                 },
                 "storageProfile": {
+                    "imageReference": {
+                        "id": "[parameters('managedDiskImageID')]"
+                    },
                     "osDisk": {
                         "osType": "Linux",
                         "name": "osdiskrelay",
                         "createOption": "FromImage",
-                        "image": {
-                            "uri": "[concat('https://',variables('storageAccountName'),'.blob.core.windows.net/images/gtimage.vhd')]"
-                        },
-                        "vhd": {
-                            "uri": "[concat('https://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
-                        },
-                        "caching": "ReadWrite"
-                    }
+                        "caching": null,
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                        }
+                    },
+                    "dataDisks": [
+                   {
+                     "diskSizeGB": "[parameters('sizeOfDataDiskInGB')]",
+                     "lun": 0,
+                     "createOption": "Empty"
+                   },
+                   {
+                     "diskSizeGB": "[parameters('sizeOfDataDiskInGB')]",
+                     "lun": 1,
+                     "createOption": "Empty"
+                   },
+                   {
+                     "diskSizeGB": "[parameters('sizeOfDataDiskInGB')]",
+                     "lun": 2,
+                     "createOption": "Empty"
+                   },
+{
+                     "diskSizeGB": "[parameters('sizeOfDataDiskInGB')]",
+                     "lun": 3,
+                     "createOption": "Empty"
+                   }
+                   ]
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -305,13 +334,15 @@
                 },
                 "virtualMachineProfile": {
                     "storageProfile": {
+                        "imageReference": {
+                            "id": "[parameters('managedDiskImageID')]"
+                        },
                         "osDisk": {
                             "osType": "Linux",
-                            "name": "[concat('osdisk',toLower(variables('vmprefix')))]",
-                            "caching": "ReadOnly",
-                            "image": {
-                                "uri": "[concat('https://',variables('storageAccountName'),'.blob.core.windows.net/images/gtimage.vhd')]"
-                            },
+                            "caching": null,
+                            "managedDisk": {
+                                "storageAccountType": "Standard_LRS"
+                             },
                             "createOption": "FromImage"
                         }
                     },
