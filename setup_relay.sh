@@ -1,7 +1,9 @@
 #!/bin/bash
 
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/setup_relay_shares.sh
+wget https://raw.githubusercontent.com/hansenms/azure_templates/master/setup_relay_raid.sh
 
+bash setup_relay_raid.sh
 sh setup_relay_shares.sh
 
 sh mount_and_run_docker.sh $(hostname) 192.168.1.1
