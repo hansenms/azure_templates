@@ -15,9 +15,5 @@ done
 
 sleep 20
 
-#Deprovision
-command="sudo waagent -force -deprovision"
-ssh -o StrictHostKeyChecking=no gadgetron@${group_name}vm.${location}.cloudapp.azure.com $command
-
 sh ./create_image_from_vm.sh ${group_name}  gtDiskCreator
 
