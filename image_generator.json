@@ -14,6 +14,31 @@
                 "description": "Password for the Virtual Machine."
             }
         },
+        "dockerUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "User name for the Virtual Machine."
+            }
+        },
+        "dockerPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the Virtual Machine."
+            }
+        },
+                "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "User name for the Virtual Machine."
+            }
+        },
+        "dockerImage": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of Docker image"
+            },
+            "defaultValue": "gadgetron/ubuntu_1604_no_cuda"
+        },
         "sshKeyValue1": {
             "type": "string",
             "metadata": {
@@ -184,6 +209,26 @@
                         "enabled": "true",
                         "storageUri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net')]"
                     }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat([variables('vmName')],'/', 'SetupDiskCreator')]",
+            "apiVersion": "[variables('computeApiVersion')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', [variables('vmName')])]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.OSTCExtensions",
+                "type": "CustomScriptForLinux",
+                "typeHandlerVersion": "1.4",
+                "settings": {
+                    "fileUris": [
+                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/setup_disk_creator.sh"
+                    ],
+                    "commandToExecute": "[concat('bash ./setup_disk_creator.sh ', parameters('dockerUsername'), ' ', parameters('dockerPassword'), ' ', parameters('dockerImage'))]"
                 }
             }
         }
