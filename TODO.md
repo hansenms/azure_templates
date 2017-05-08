@@ -7,5 +7,6 @@ To Do List
 * Add storage drive to relay
 * Share storage drive with instances
 * Let instances copy image from relay and use `docker load` to start
-
+* Status/statistics script
+* Daily emails with stats and status
 
