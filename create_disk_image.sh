@@ -17,7 +17,7 @@ sleep 20
 
 #Remove extension so that we can add a new one later. 
 extension_id=$(az vm extension list -g $group_name --vm-name gtDiskCreator | jq -r .[0].id)
-vm extension delete --ids $extension_id 
+az vm extension delete --ids $extension_id 
 
 #Deprovision
 command="sudo waagent -force -deprovision"
