@@ -10,6 +10,15 @@
         },
         "sshKeyValue1": {
             "value": "<SSH KEY>"
+        },
+        "dockerUsername": {
+           "value":"<DOCKER USERNAME>"
+        },
+        "dockerPassword": {
+           "value":"<DOCKER PASSWORD>"
+        },
+        "dockerImage": {
+           "value":"gadgetron/ubuntu_1604_no_cuda"
         }
     }
 }

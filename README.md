@@ -1,7 +1,5 @@
-Gadgetron Azure Templates
+Gadgetron Lighthouse Azure Templates
 =========================
-
-These configurations are a good starting point for spinning up a Gadgetron Azure Cloud. 
 
 Prerequisites
 --------------
@@ -10,14 +8,50 @@ Prerequisites
 * An Azure service principal with credentials (needed when deploying). You should read the [documentation for service principals](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal)
 * [Azure CLI 2.0](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) 
 
-Getting up and running
+Overview
+--------
+
+The workflow for standing up a Gadgetron Lighthouse cloud deployment involves the following steps:
+
+1. Create Service Principal (you should have already done this)
+2. Create an account on [Docker Hub](https://hub.docker.com) (you should have already done this)
+3. Install the [Azure CLI 2.0](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+4. Log into Azure from the command line using `az login`
+5. Create a disk image with the `create_disk_image.sh` tool.
+6. Make a note of the [Managed Disk Image](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/capture-image-resource) ID. 
+7. Enter the Managed Disk ID into the parameters file for the actual gadgetron deployment along with service principal details, etc. 
+8. Deploy the Gadgetron Lighthouse Cloud with the `create_gadgetron_cloud.sh` tool. 
+
+Detailed Instructions
 -----------------------
 
-First create an image:
+Clone the github repo with the tools:
 
-      bash ./create_disk_image.sh <GROUP NAME> image_generator.json image_generator.parameters.hansen.json <DOCKER USERNAME> <DOCKER PASSWORD> <DOCKER IMAGE>
+```
+git clone https://github.com/hansenms/azure_templates
+cd azure_templates
+```
 
-`<GROUP NAME>` is a name for the resource group that will hold the disk image you are creating. It cannot be an existing group. `image_generator.parameters.json` is a json file containing some basic parameters needed to log into the VM and run various configuration tasks. It should look something like:
+First create an image using the `create_disk_image.sh` tool. You can see the usage instructions of this tool with `./create_disk_image.sh --help`:
+
+```
+Usage:  create_disk_image.sh [OPTIONS]
+Available options
+
+  -h | --help                          : Print help text
+  -g | --group <GROUP NAME>            : Name of ResourceGroup (default: gtDiskCreator20170509155216)
+  -t | --template <TEMPLATE FILE>      : Template file name (default: image_generator.json)
+  -p | --parameters <PARAMETERS FILE>  : Template parameters file name (default: image_generator.parameters.json)
+  -l | --location <LOCATION>           : Location (default: eastus)
+```
+
+In practice you would call it with something like:
+
+```
+./create_disk_image.sh --parameters image_generator.parameters.MySpecialConfig.json --location eastus --group MyGeneratorGroupName
+```
+
+The configuration (json) file needs to contain the required [Docker](https://docker.com) details along with an SSH key to allow the script to log into the machine to provision it. There is a template for this file in `image_generator.parameters.json`:
 
 ```
 {
@@ -25,22 +59,31 @@ First create an image:
     "contentVersion": "0.0.0.1",
     "parameters": {
         "adminUsername": {
-            "value": "gadgetron"
+            "value": "<ADMIN USERNAME>"
         },
         "adminPassword": {
-            "value": "<PASSWORD FOR IMAGE CREATOR>"
+            "value": "<ADMIN PASSWORD>"
         },
         "sshKeyValue1": {
-          "value": "ssh-rsa JAJSHKDHSKJDHKJSDHJKDHSJSDKJHSKJHKSDJHJKDHSKHDKSJHDKSDHJK  exportedkey"  
+            "value": "<SSH KEY>"
+        },
+        "dockerUsername": {
+           "value":"<DOCKER USERNAME>"
+        },
+        "dockerPassword": {
+           "value":"<DOCKER PASSWORD>"
+        },
+        "dockerImage": {
+           "value":"gadgetron/ubuntu_1604_no_cuda"
         }
     }
 }
 ```
 The `sshKeyValue1` is the public key that will be installed on the VM to enable login to run the configuration scripts. It should be a key that works with the user that you are running this script as. You would probably find that key by typing `cat ~/.ssh/id_rsa.pub`.
 
-At the end of this process, you will have a managed disk image in Azure. You can find the ID of this image by looking at the output of `az image list`. If you just want the IDs of the images `az image list | jq .[].id`.
+At the end of this process (which will probably take 20-30 minutes), you will have a managed disk image in Azure. You can find the ID of this image by looking at the output of `az image list`. If you just want the IDs of the images `az image list | jq .[].id`.
 
-How you need to make a configuration file with parameters for the cloud deployment itself. You can find an example configuration file in `gadgetron.parameters.json`:
+Now you need to make a configuration file with parameters for the cloud deployment itself. You can find an example configuration file in `gadgetron.parameters.json`:
 
 ```
 {
@@ -84,5 +127,12 @@ How you need to make a configuration file with parameters for the cloud deployme
    }
 }
 ```
-The SSH key values are to let you specify a number of keys that will give access to the relay node. The `azure_client_id`, `azure_tenant_id`, and `azure_key` are the service principal credentials. The relay node will need these in order to manage resources. The `managedDiskID` is the managed disk ID found in the `az image list`.
+The SSH key values are to let you specify a number of keys that will give access to the relay node. The `azure_client_id`, `azure_tenant_id`, and `azure_key` are the service principal credentials. The relay node will need these in order to manage resources. The `managedDiskID` is the managed disk ID found in the `az image list`.Once you have filled this parameter file in once, you will probably only need to change the `managedDiskID` when you make a new deployment. 
 
+With the completed parameters file you can now make a deployment:
+
+```
+./create_gadgetron_cloud.sh --parameters gadgetron.parameters.MyDeployment.hansen.json --group NameOfDeploymentGroup
+```
+
+This will take 5 minutes or so after which you should be able to log into `NameOfDeploymentGroup.LOCATION.cloudapp.azure.com` with the credentials you specified in the parameters file. 
