@@ -12,7 +12,4 @@ To Do List
 * Status/statistics script
 * Daily emails with stats and status
 * Update to Ubuntu 16.04 as base system
-* Change disk creation (goal is to prevent long running setup from loosing connection):
-  * Install packages in Custom script
-  * Wait for deployment to complete
-  * Then deprovision and make image
+
