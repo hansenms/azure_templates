@@ -132,7 +132,18 @@ The SSH key values are to let you specify a number of keys that will give access
 With the completed parameters file you can now make a deployment:
 
 ```
-./create_gadgetron_cloud.sh --parameters gadgetron.parameters.MyDeployment.hansen.json --group NameOfDeploymentGroup
+./create_gadgetron_cloud.sh --parameters gadgetron.parameters.MyDeployment.hansen.json --group NameOfDeploymentGroup --location eastus
 ```
 
-This will take 5 minutes or so after which you should be able to log into `NameOfDeploymentGroup.LOCATION.cloudapp.azure.com` with the credentials you specified in the parameters file. 
+This will take 5 minutes or so after which you should be able to log into `NameOfDeploymentGroup.LOCATION.cloudapp.azure.com` with the credentials you specified in the parameters file. You can get the details on how to use the `create_gadgetron_cloud.sh` script with `./create_gadgetron_cloud.sh --help`:
+
+```
+Usage:  create_gadgetron_cloud.sh [OPTIONS]
+Available options
+
+  -h | --help                          : Print help text
+  -g | --group <GROUP NAME>            : Name of ResourceGroup (default: nhlbi20170509161746)
+  -t | --template <TEMPLATE FILE>      : Template file name (default: gadgetron.json)
+  -p | --parameters <PARAMETERS FILE>  : Template parameters file name (default: gadgetron.parameters.json)
+  -l | --location <LOCATION>           : Location (default: eastus)
+```
