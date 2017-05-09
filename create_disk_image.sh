@@ -16,11 +16,12 @@ done
 sleep 20
 
 #Remove extension so that we can add a new one later. 
-#az vm extension delete --name "gtDiskCreator/SetupDiskCreator" --resource-group $group_name --vm-name gtDiskCreator
+extension_id=$(az vm extension list -g $group_name --vm-name gtDiskCreator | jq -r .[0].id)
+vm extension delete --ids $extension_id 
 
 #Deprovision
-#command="sudo waagent -force -deprovision"
-#ssh -o StrictHostKeyChecking=no gadgetron@${group_name}vm.${location}.cloudapp.azure.com $command
+command="sudo waagent -force -deprovision"
+ssh -o StrictHostKeyChecking=no gadgetron@${group_name}vm.${location}.cloudapp.azure.com $command
 
-#sh ./create_image_from_vm.sh ${group_name}  gtDiskCreator
+sh ./create_image_from_vm.sh ${group_name}  gtDiskCreator
 
