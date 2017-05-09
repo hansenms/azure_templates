@@ -31,5 +31,3 @@ docker login -u $docker_username -p $docker_password
 docker pull $docker_image
 docker tag $docker_image current_gadgetron
 
-#Deprovision
-waagent -force -deprovision
