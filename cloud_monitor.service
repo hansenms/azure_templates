@@ -1,0 +1,10 @@
+[Unit]
+Description=Job that runs the Gadgetron Lighthouse monitor
+
+[Service]
+Type=simple
+WorkingDirectory=/usr/local/share/gadgetron/azure
+ExecStart=/usr/local/share/gadgetron/azure/cloud_monitor.sh -v
+
+[Install]
+WantedBy=multi-user.target

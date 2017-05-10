@@ -147,3 +147,12 @@ Available options
   -p | --parameters <PARAMETERS FILE>  : Template parameters file name (default: gadgetron.parameters.json)
   -l | --location <LOCATION>           : Location (default: eastus)
 ```
+
+Monitoring and Maintenance
+--------------------------
+
+On Ubuntu 14.04 base images (old version), the cloud monitor log can be found at `/var/log/upstart/cloud_monitor.log`. On the newer Ubuntu 16.04 base images, the log can be browsed with the `journalctl` tool, e.g., to follow the cloud monitor log:
+
+```
+journalctl -f -u cloud_monitor.service
+```

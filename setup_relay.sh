@@ -31,6 +31,6 @@ wget https://raw.githubusercontent.com/hansenms/azure_templates/master/delete_fa
 
 
 chmod +x cloud_monitor.sh
-cp cloud_monitor.conf /etc/init/
+cp cloud_monitor.service /etc/systemd/system/
 
-service cloud_monitor start
+systemctl start cloud_monitor.service
