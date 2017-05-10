@@ -18,7 +18,7 @@ wget https://raw.githubusercontent.com/hansenms/azure_templates/master/update_ip
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/get_custom_data.sh
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/azure_login.sh
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/cloud_monitor.sh
-wget https://raw.githubusercontent.com/hansenms/azure_templates/master/cloud_monitor.conf
+wget https://raw.githubusercontent.com/hansenms/azure_templates/master/cloud_monitor.service
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/get_node_from_ip.sh
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/get_total_nodes.sh
 wget https://raw.githubusercontent.com/hansenms/azure_templates/master/get_deallocated_nodes.sh
