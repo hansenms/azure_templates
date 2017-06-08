@@ -1,0 +1,5 @@
+{
+    "sendgridApiKey":"<APIKEY>",
+    "to": [{"email": "firstperson@mailserver.com"}, {"email":"cloudfanatic@example.com"}],
+    "from": {"email": "myadmin@example.com", "name": "Gadgetron Cloud Administrator"}
+}
