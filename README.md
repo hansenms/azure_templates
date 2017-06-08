@@ -156,3 +156,39 @@ On Ubuntu 14.04 base images (old version), the cloud monitor log can be found at
 ```
 journalctl -f -u cloud_monitor.service
 ```
+
+Recommended Additional Setup
+----------------------------
+
+It is recommended that you clone this github repo on the relay node. It contains useful additional scripts.
+
+You should periodically clean up the group deployments, there is a script for it, which you could run with:
+
+```
+nohup sudo bash ./clean_up_group_deployments.sh <GROUP NAME>
+```
+
+You can then put that script in the background and log out.
+
+If you would like email notifications, you can use the `send_summary_email.sh` script. It needs a configuration file:
+
+```
+{
+    "sendgridApiKey":"<APIKEY>",
+    "to": [{"email": "firstperson@mailserver.com"}, {"email":"cloudfanatic@example.com"}],
+    "from": {"email": "myadmin@example.com", "name": "Gadgetron Cloud Administrator"}
+}	    
+```
+
+The `APIKEY` is the API key from the [SendGrid](https://sendgrid.com/docs/API_Reference/Web_API_v3/How_To_Use_The_Web_API_v3/authentication.html) that is used by the email sending script. You can send a single summary email with:
+
+```
+./send_summary_email.sh summary_email_config.hansen.json
+```
+
+Or add it as a CRON job, if you want to run it every day at say midnight, use `crontab -e` to edit and enter a line like:
+
+```
+0 0 * * * /home/gadgetron/azure_templates/send_summary_email.sh /home/gadgetron/azure_templates/summary_email_config.hansen.json
+```
+
