@@ -148,6 +148,11 @@ Available options
   -l | --location <LOCATION>           : Location (default: eastus)
 ```
 
+Using a different repository location
+-------------------------------------
+
+The setup scripts pull resources (scripts and configuration files) from the default location https://raw.githubusercontent.com/hansenms/azure_templates/master, if you would like to use a different location, e.g., a branch you are working on or a clone of the repository, you should specify the parameter `scriptBasePathUri` in the template parameters file. 
+
 Monitoring and Maintenance
 --------------------------
 
@@ -192,3 +197,23 @@ Or add it as a CRON job, if you want to run it every day at say midnight, use `c
 0 0 * * * /home/gadgetron/azure_templates/send_summary_email.sh /home/gadgetron/azure_templates/summary_email_config.hansen.json
 ```
 
+Scheduling
+----------
+
+It is possible to provide a schedule for managing the number of active nodes (in addition to the increases/decreases in response to activity). The schedule can be specified in the file `/usr/local/share/gadgetron/azure/schedule.json`. In the default installation, this file is empty and consequently, the minimum number of nodes is zero and the maximum is the maximum specifed by the `cloud_monitor` (i.e., default 20). If you would like to provide a different schedule, you can follow the example in `schedule.example.json` file:
+
+```
+{
+    "schedule": [
+	{
+	    "start": "07:30",
+	    "end": "19:30",
+	    "weekdays": [ "Monday", "Tuesday", "Wednesday", "Thursday","Friday" ],
+            "min": 8,
+            "max": 20
+	}
+    ]
+}
+```
+
+This configuration sets the minimum number of nodes to be 8 (and he maximum 20) between the hours of 07:30 and 19:30 (UTC), Monday through Friday. This would allow operation without a start scan during normal clinical operating hours. 

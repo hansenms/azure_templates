@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Cloud monitoring for Gadgetron Azure Cloud
-# Michael S. Hansen (michael.hansen@nih.gov)
+# Michael S. Hansen (michael.schacht.hansen@gmail.com)
 
 scaleup_interval=5
 activity_time=60
@@ -12,10 +12,10 @@ node_increment=8
 verbose=0
 custom_data=$(sudo sh get_custom_data.sh)
 group=$(echo $custom_data|jq .group|tr -d '"')
-#TODO: We should fix this. Should be based on a lookup
 vmss="${group}node" 
 max_nodes=20
-
+BASEDIR=$(dirname $0)
+schedule_file="${BASEDIR}/schedule.json"
 
 usage()
 {
@@ -26,6 +26,7 @@ usage()
     echo "                    [--scale-up-settle-time <SECONDS>]"
     echo "                    [--node-increment <NODES>]"    
     echo "                    [--max-nodes <NODES>]"    
+    echo "                    [--schedule <schedule file>]"    
     echo "                    [--verbose]"
     echo "                    [--help]"
 }
@@ -106,6 +107,9 @@ while [ "$1" != "" ]; do
         -m | --max-nodes )             shift
                                        max_nodes=$1
                                        ;;
+        --schedule )                   shift
+                                       schedule_file=$1
+                                       ;;
         -v | --verbose )               verbose=1
                                        ;;
         -h | --help )                  usage
@@ -129,13 +133,26 @@ while true; do
     active_nodes=$(number_of_active_nodes)
     nodes=$(number_of_nodes)
     ideal_nodes=$nodes
+
+    schedule_min=$(echo $(${BASEDIR}/get_schedule_entry.sh ${schedule_file} "$(date)") | jq -r .min)
+    schedule_max=$(echo $(${BASEDIR}/get_schedule_entry.sh ${schedule_file} "$(date)") | jq -r .max)
+
+    if [ "$schedule_max" -gt "$max_nodes" ]; then
+	schedule_max=$max_nodes
+    fi
+    
     if [ "$active_nodes" -gt 0 ]; then
 	ideal_nodes=`expr $active_nodes + $node_increment`
     fi
 
-    if [ "$ideal_nodes" -gt "$max_nodes" ]; then
-	ideal_nodes=$max_nodes
+    if [ "$ideal_nodes" -gt "$schedule_max" ]; then
+	ideal_nodes=$schedule_max
     fi
+
+    if [ "$ideal_nodes" -lt "$schedule_min" ]; then
+	ideal_nodes=$schedule_min
+    fi
+
 
     #Log every 5th run through the loop
     if [ "$(expr $counter % 5)" -eq 0 ]; then
@@ -171,7 +188,7 @@ while true; do
 	#First a check to see if we have hanging nodes that have not been provisioned properly. We should get rid of them.
 	bash delete_failed_nodes.sh $group $vmss
 
-	if [ "$ideal_nodes" -le "$nodes" ] && [ "$nodes" -gt 0 ]; then
+	if [ "$schedule_min" -lt "$nodes" ] && [ "$ideal_nodes" -le "$nodes" ] && [ "$nodes" -gt 0 ]; then
 	    on=$(oldest_node)
 	    lastr=$(echo $on | jq .last_recon | tr -d '"')
 	    if [ "${lastr%.*}" -gt "$idle_time" ]; then

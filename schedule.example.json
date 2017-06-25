@@ -1,0 +1,11 @@
+{
+    "schedule": [
+	{
+	    "start": "07:30",
+	    "end": "19:30",
+	    "weekdays": [ "Monday", "Tuesday", "Wednesday", "Thursday","Friday" ],
+            "min": 8,
+            "max": 20
+	}
+    ]
+}
