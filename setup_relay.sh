@@ -31,7 +31,8 @@ wget ${basepath}/set_vmss_capacity.sh
 wget ${basepath}/vmss_update.json
 wget ${basepath}/delete_failed_nodes.sh
 wget ${basepath}/schedule.json
-
+wget ${basepath}/get_schedule_entry.sh
+wget ${basepath}/schedule.example.json
 
 chmod +x cloud_monitor.sh
 cp cloud_monitor.service /etc/systemd/system/

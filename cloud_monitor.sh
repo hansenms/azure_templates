@@ -133,13 +133,26 @@ while true; do
     active_nodes=$(number_of_active_nodes)
     nodes=$(number_of_nodes)
     ideal_nodes=$nodes
+
+    schedule_min=$(echo $(${BASEDIR}/get_schedule_entry.sh ${schedule_file} "$(date)") | jq -r .min)
+    schedule_max=$(echo $(${BASEDIR}/get_schedule_entry.sh ${schedule_file} "$(date)") | jq -r .max)
+
+    if [ "$schedule_max" -gt "$max_nodes" ]; then
+	schedule_max=$max_nodes
+    fi
+    
     if [ "$active_nodes" -gt 0 ]; then
 	ideal_nodes=`expr $active_nodes + $node_increment`
     fi
 
-    if [ "$ideal_nodes" -gt "$max_nodes" ]; then
-	ideal_nodes=$max_nodes
+    if [ "$ideal_nodes" -gt "$schedule_max" ]; then
+	ideal_nodes=$schedule_max
     fi
+
+    if [ "$ideal_nodes" -lt "$schedule_min" ]; then
+	ideal_nodes=$schedule_min
+    fi
+
 
     #Log every 5th run through the loop
     if [ "$(expr $counter % 5)" -eq 0 ]; then
@@ -175,7 +188,7 @@ while true; do
 	#First a check to see if we have hanging nodes that have not been provisioned properly. We should get rid of them.
 	bash delete_failed_nodes.sh $group $vmss
 
-	if [ "$ideal_nodes" -le "$nodes" ] && [ "$nodes" -gt 0 ]; then
+	if [ "$schedule_min" -lt "$nodes" ] && [ "$ideal_nodes" -le "$nodes" ] && [ "$nodes" -gt 0 ]; then
 	    on=$(oldest_node)
 	    lastr=$(echo $on | jq .last_recon | tr -d '"')
 	    if [ "${lastr%.*}" -gt "$idle_time" ]; then
