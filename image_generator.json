@@ -26,7 +26,7 @@
                 "description": "Password for the Virtual Machine."
             }
         },
-                "adminUsername": {
+        "adminUsername": {
             "type": "string",
             "metadata": {
                 "description": "User name for the Virtual Machine."
@@ -56,6 +56,13 @@
             "metadata": {
                 "description": "The Ubuntu version for the VM."
             }
+        },
+	"scriptBasePathUri": {
+            "type": "string",
+            "metadata": {
+                "description": "Path to scripts"
+            },
+            "defaultValue": "https://raw.githubusercontent.com/hansenms/azure_templates/master"
         }
     },
     "variables": {
@@ -227,7 +234,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": [
-                        "https://raw.githubusercontent.com/hansenms/azure_templates/master/setup_disk_creator.sh"
+                        "[concat(parameters('scriptBasePathUri'), '/setup_disk_creator.sh')]"
                     ],
                     "commandToExecute": "[concat('bash ./setup_disk_creator.sh ', parameters('dockerUsername'), ' ', parameters('dockerPassword'), ' ', parameters('dockerImage'))]"
                 }

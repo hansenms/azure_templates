@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Cloud monitoring for Gadgetron Azure Cloud
-# Michael S. Hansen (michael.hansen@nih.gov)
+# Michael S. Hansen (michael.schacht.hansen@gmail.com)
 
 scaleup_interval=5
 activity_time=60
@@ -12,10 +12,10 @@ node_increment=8
 verbose=0
 custom_data=$(sudo sh get_custom_data.sh)
 group=$(echo $custom_data|jq .group|tr -d '"')
-#TODO: We should fix this. Should be based on a lookup
 vmss="${group}node" 
 max_nodes=20
-
+BASEDIR=$(dirname $0)
+schedule_file="${BASEDIR}/schedule.json"
 
 usage()
 {
@@ -26,6 +26,7 @@ usage()
     echo "                    [--scale-up-settle-time <SECONDS>]"
     echo "                    [--node-increment <NODES>]"    
     echo "                    [--max-nodes <NODES>]"    
+    echo "                    [--schedule <schedule file>]"    
     echo "                    [--verbose]"
     echo "                    [--help]"
 }
@@ -105,6 +106,9 @@ while [ "$1" != "" ]; do
                                        ;;
         -m | --max-nodes )             shift
                                        max_nodes=$1
+                                       ;;
+        --schedule )                   shift
+                                       schedule_file=$1
                                        ;;
         -v | --verbose )               verbose=1
                                        ;;
