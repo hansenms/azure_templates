@@ -3,7 +3,6 @@
 schedule_file=$1
 timepoint=$2
 comptimepoint=$(date --date="${timepoint}" +"%H:%M")
-echo "$comptimepoint"
 
 schedule_entries=$(cat $schedule_file | jq -r '.schedule | length')
 
