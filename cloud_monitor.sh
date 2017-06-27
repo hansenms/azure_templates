@@ -134,8 +134,8 @@ while true; do
     nodes=$(number_of_nodes)
     ideal_nodes=$nodes
 
-    schedule_min=$(echo $(${BASEDIR}/get_schedule_entry.sh ${schedule_file} "$(date)") | jq -r .min)
-    schedule_max=$(echo $(${BASEDIR}/get_schedule_entry.sh ${schedule_file} "$(date)") | jq -r .max)
+    schedule_min=$(echo $(bash ${BASEDIR}/get_schedule_entry.sh ${schedule_file} "$(date)") | jq -r .min)
+    schedule_max=$(echo $(bash ${BASEDIR}/get_schedule_entry.sh ${schedule_file} "$(date)") | jq -r .max)
 
     if [ "$schedule_max" -gt "$max_nodes" ]; then
 	schedule_max=$max_nodes
